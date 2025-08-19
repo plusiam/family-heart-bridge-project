@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 교사 대시보드 - 마음으로 잇는 우리 가족</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        
+        .title-font {
+            font-family: 'Jua', sans-serif;
+        }
+        
+        .dropzone {
+            transition: all 0.3s ease;
+        }
+        
+        .dropzone.dragover {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: #9333ea;
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background: #9333ea;
+            color: white;
+        }
+        
+        .student-row:hover {
+            background: #f9fafb;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto p-6 max-w-7xl">
+        <!-- 헤더 -->
+        <header class="bg-white rounded-lg shadow-lg p-6 mb-6 animate-slide-in">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="title-font text-3xl font-bold text-gray-800">📊 학급 감정교육 분석 대시보드</h1>
+                    <p class="text-gray-600 mt-2">학생들의 감정 학습 데이터를 분석하고 관리합니다</p>
+                </div>
+                <button onclick="window.location.href='../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                    🏠 학생 모드로
+                </button>
+            </div>
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="stat-card bg-purple-100 px-4 py-3 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-600 text-sm">학급</p>
+                            <p class="text-purple-800 font-bold text-lg" id="className">-</p>
+                        </div>
+                        <span class="text-2xl">🏫</span>
+                    </div>
+                </div>
+                <div class="stat-card bg-blue-100 px-4 py-3 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-600 text-sm">학생 수</p>
+                            <p class="text-blue-800 font-bold text-lg"><span id="studentCount">0</span>명</p>
+                        </div>
+                        <span class="text-2xl">👥</span>
+                    </div>
+                </div>
+                <div class="stat-card bg-green-100 px-4 py-3 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-green-600 text-sm">평균 진도</p>
+                            <p class="text-green-800 font-bold text-lg"><span id="avgProgress">0</span>%</p>
+                        </div>
+                        <span class="text-2xl">📈</span>
+                    </div>
+                </div>
+                <div class="stat-card bg-yellow-100 px-4 py-3 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-yellow-600 text-sm">평균 포인트</p>
+                            <p class="text-yellow-800 font-bold text-lg"><span id="avgPoints">0</span>점</p>
+                        </div>
+                        <span class="text-2xl">🏆</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 파일 업로드 -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">📁 학생 데이터 업로드</h2>
+            <div class="dropzone border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-500 transition cursor-pointer" 
+                 id="dropzone"
+                 ondrop="handleDrop(event)"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <p class="mt-2 text-sm text-gray-600">
+                    학생들의 JSON 파일을 드래그하거나 클릭하여 업로드하세요
+                </p>
+                <p class="text-xs text-gray-500 mt-1">
+                    (여러 파일 동시 업로드 가능)
+                </p>
+                <input type="file" id="fileInput" class="hidden" multiple accept=".json" onchange="handleFileSelect(event)">
+                <button onclick="document.getElementById('fileInput').click()" 
+                        class="mt-4 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
+                    파일 선택
+                </button>
+            </div>
+            <div id="uploadedFiles" class="mt-4 space-y-2"></div>
+        </div>
+
+        <!-- 분석 탭 -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6" id="analysisSection" style="display: none;">
+            <div class="flex gap-2 mb-6 overflow-x-auto">
+                <button class="tab-btn px-4 py-2 bg-purple-500 text-white rounded-lg whitespace-nowrap" onclick="showAnalysisTab('overview')">
+                    📊 전체 현황
+                </button>
+                <button class="tab-btn px-4 py-2 bg-gray-200 rounded-lg whitespace-nowrap" onclick="showAnalysisTab('emotions')">
+                    🎭 감정 패턴
+                </button>
+                <button class="tab-btn px-4 py-2 bg-gray-200 rounded-lg whitespace-nowrap" onclick="showAnalysisTab('individual')">
+                    👤 개인별 분석
+                </button>
+                <button class="tab-btn px-4 py-2 bg-gray-200 rounded-lg whitespace-nowrap" onclick="showAnalysisTab('timeline')">
+                    📅 시간별 추이
+                </button>
+                <button class="tab-btn px-4 py-2 bg-gray-200 rounded-lg whitespace-nowrap" onclick="showAnalysisTab('recommendations')">
+                    💡 추천 활동
+                </button>
+            </div>
+
+            <!-- 전체 현황 탭 -->
+            <div id="overviewTab" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-bold mb-3">📊 카드 수집 현황</h3>
+                        <div class="chart-container">
+                            <canvas id="collectionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-bold mb-3">🎯 감정 카테고리 분포</h3>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-bold mb-3">📈 학습 진도 분포</h3>
+                        <div class="chart-container">
+                            <canvas id="progressChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-bold mb-3">⭐ 활동 포인트 분포</h3>
+                        <div class="chart-container">
+                            <canvas id="pointsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 감정 패턴 탭 -->
+            <div id="emotionsTab" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-bold mb-3">🌈 감정 카테고리별 수집률</h3>
+                        <div class="chart-container">
+                            <canvas id="emotionRadarChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-bold mb-3">💫 인기 감정 카드 Top 10</h3>
+                        <div id="popularCardsContainer" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 개인별 분석 탭 -->
+            <div id="individualTab" class="tab-content hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="px-4 py-2 text-left">이름</th>
+                                <th class="px-4 py-2 text-center">아바타</th>
+                                <th class="px-4 py-2 text-center">수집 카드</th>
+                                <th class="px-4 py-2 text-center">제작 카드</th>
+                                <th class="px-4 py-2 text-center">포인트</th>
+                                <th class="px-4 py-2 text-center">진도율</th>
+                                <th class="px-4 py-2 text-center">주요 감정</th>
+                                <th class="px-4 py-2 text-center">추천 활동</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTable">
+                            <!-- 동적 생성 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 시간별 추이 탭 -->
+            <div id="timelineTab" class="tab-content hidden">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-bold mb-3">📅 일별 활동 추이</h3>
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 추천 활동 탭 -->
+            <div id="recommendationsTab" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 p-6 rounded-lg">
+                        <h3 class="font-bold mb-3 text-blue-800">🎯 학급 전체 추천</h3>
+                        <ul id="classRecommendations" class="space-y-2 text-gray-700">
+                            <!-- 동적 생성 -->
+                        </ul>
+                    </div>
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h3 class="font-bold mb-3 text-green-800">👥 개별 맞춤 추천</h3>
+                        <div id="individualRecommendations" class="space-y-3">
+                            <!-- 동적 생성 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 리포트 생성 -->
+        <div class="mt-6 flex justify-center gap-4" id="reportButtons" style="display: none;">
+            <button onclick="generatePDFReport()" 
+                class="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                PDF 리포트 생성
+            </button>
+            <button onclick="exportToExcel()" 
+                class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v1a1 1 0 001 1h4a1 1 0 001-1v-1m-5 0h5m-5 0l1-12h3l1 12m-5 0H5m10 0h4M7 5h10"></path>
+                </svg>
+                Excel 내보내기
+            </button>
+            <button onclick="window.print()" 
+                class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                </svg>
+                인쇄하기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let students = [];
+        let className = '';
+        let charts = {};
+
+        // 감정 카드 데이터 (학생 도구와 동일)
+        const emotionCards = [
+            { id: 1, name: '기쁨', emoji: '😊', category: 'happy', color: '#FFD93D' },
+            { id: 2, name: '신남', emoji: '🤗', category: 'happy', color: '#FFD93D' },
+            { id: 3, name: '만족', emoji: '😌', category: 'happy', color: '#FFD93D' },
+            { id: 4, name: '자랑스러움', emoji: '😎', category: 'happy', color: '#FFD93D' },
+            { id: 5, name: '감사', emoji: '🙏', category: 'happy', color: '#FFD93D' },
+            { id: 6, name: '슬픔', emoji: '😢', category: 'sad', color: '#4682B4' },
+            { id: 7, name: '외로움', emoji: '😔', category: 'sad', color: '#4682B4' },
+            { id: 8, name: '실망', emoji: '😞', category: 'sad', color: '#4682B4' },
+            { id: 9, name: '그리움', emoji: '🥺', category: 'sad', color: '#4682B4' },
+            { id: 10, name: '후회', emoji: '😓', category: 'sad', color: '#4682B4' },
+            { id: 11, name: '화남', emoji: '😠', category: 'angry', color: '#FF6B6B' },
+            { id: 12, name: '짜증', emoji: '😤', category: 'angry', color: '#FF6B6B' },
+            { id: 13, name: '답답함', emoji: '😣', category: 'angry', color: '#FF6B6B' },
+            { id: 14, name: '억울함', emoji: '😖', category: 'angry', color: '#FF6B6B' },
+            { id: 15, name: '분노', emoji: '🤬', category: 'angry', color: '#FF6B6B' },
+            { id: 16, name: '두려움', emoji: '😨', category: 'fear', color: '#6C5CE7' },
+            { id: 17, name: '걱정', emoji: '😟', category: 'fear', color: '#6C5CE7' },
+            { id: 18, name: '긴장', emoji: '😰', category: 'fear', color: '#6C5CE7' },
+            { id: 19, name: '불안', emoji: '😥', category: 'fear', color: '#6C5CE7' },
+            { id: 20, name: '초조함', emoji: '😬', category: 'fear', color: '#6C5CE7' },
+            { id: 21, name: '놀람', emoji: '😲', category: 'surprise', color: '#FFA502' },
+            { id: 22, name: '신기함', emoji: '🤔', category: 'surprise', color: '#FFA502' },
+            { id: 23, name: '당황', emoji: '😳', category: 'surprise', color: '#FFA502' },
+            { id: 24, name: '충격', emoji: '🤯', category: 'surprise', color: '#FFA502' },
+            { id: 25, name: '감탄', emoji: '😍', category: 'surprise', color: '#FFA502' },
+            { id: 26, name: '사랑', emoji: '🥰', category: 'love', color: '#FD79A8' },
+            { id: 27, name: '설렘', emoji: '💕', category: 'love', color: '#FD79A8' },
+            { id: 28, name: '애정', emoji: '💖', category: 'love', color: '#FD79A8' },
+            { id: 29, name: '친밀함', emoji: '🤝', category: 'love', color: '#FD79A8' },
+            { id: 30, name: '포근함', emoji: '🤗', category: 'love', color: '#FD79A8' }
+        ];
+
+        // 파일 드래그 앤 드롭
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropzone').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropzone').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            document.getElementById('dropzone').classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            processFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            processFiles(files);
+        }
+
+        // 파일 처리
+        async function processFiles(files) {
+            const fileList = document.getElementById('uploadedFiles');
+            fileList.innerHTML = '';
+            students = [];
+            
+            for (const file of files) {
+                if (file.name.endsWith('.json')) {
+                    try {
+                        const text = await file.text();
+                        const data = JSON.parse(text);
+                        
+                        // 유효성 검증
+                        if (data.profile && data.collections) {
+                            students.push(data);
+                            
+                            // 파일 목록 표시
+                            const fileItem = document.createElement('div');
+                            fileItem.className = 'flex items-center justify-between bg-gray-50 p-3 rounded-lg';
+                            fileItem.innerHTML = `
+                                <div class="flex items-center gap-2">
+                                    <span class="text-2xl">${data.profile.avatar || '🦁'}</span>
+                                    <div>
+                                        <p class="font-medium">${data.profile.name || '익명'}</p>
+                                        <p class="text-sm text-gray-500">${file.name}</p>
+                                    </div>
+                                </div>
+                                <span class="text-green-500">✓</span>
+                            `;
+                            fileList.appendChild(fileItem);
+                        }
+                    } catch (error) {
+                        console.error('파일 파싱 오류:', error);
+                    }
+                }
+            }
+            
+            if (students.length > 0) {
+                analyzeData();
+                document.getElementById('analysisSection').style.display = 'block';
+                document.getElementById('reportButtons').style.display = 'flex';
+            }
+        }
+
+        // 데이터 분석
+        function analyzeData() {
+            // 기본 통계
+            updateBasicStats();
+            
+            // 차트 생성
+            createCharts();
+            
+            // 개인별 테이블
+            createStudentTable();
+            
+            // 추천 생성
+            generateRecommendations();
+        }
+
+        // 기본 통계 업데이트
+        function updateBasicStats() {
+            const studentCount = students.length;
+            const avgProgress = Math.round(
+                students.reduce((sum, s) => sum + (s.statistics?.completionRate || 0), 0) / studentCount
+            );
+            const avgPoints = Math.round(
+                students.reduce((sum, s) => sum + (s.statistics?.totalPoints || 0), 0) / studentCount
+            );
+            
+            // 학급 정보 추출
+            const classes = students.map(s => s.profile?.className).filter(Boolean);
+            className = classes.length > 0 ? classes[0] : '3학년';
+            
+            document.getElementById('className').textContent = className;
+            document.getElementById('studentCount').textContent = studentCount;
+            document.getElementById('avgProgress').textContent = avgProgress;
+            document.getElementById('avgPoints').textContent = avgPoints;
+        }
+
+        // 차트 생성
+        function createCharts() {
+            // 카드 수집 현황 차트
+            const collectionCtx = document.getElementById('collectionChart').getContext('2d');
+            charts.collection = new Chart(collectionCtx, {
+                type: 'bar',
+                data: {
+                    labels: students.map(s => s.profile?.name || '익명'),
+                    datasets: [{
+                        label: '수집한 카드',
+                        data: students.map(s => s.collections?.collectedCards?.length || 0),
+                        backgroundColor: 'rgba(147, 51, 234, 0.5)',
+                        borderColor: 'rgb(147, 51, 234)',
+                        borderWidth: 1
+                    }, {
+                        label: '만든 카드',
+                        data: students.map(s => s.collections?.customCards?.length || 0),
+                        backgroundColor: 'rgba(34, 197, 94, 0.5)',
+                        borderColor: 'rgb(34, 197, 94)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 감정 카테고리 분포 차트
+            const categoryData = calculateCategoryDistribution();
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            charts.category = new Chart(categoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['기쁨', '슬픔', '화남', '두려움', '놀람', '사랑'],
+                    datasets: [{
+                        data: [
+                            categoryData.happy || 0,
+                            categoryData.sad || 0,
+                            categoryData.angry || 0,
+                            categoryData.fear || 0,
+                            categoryData.surprise || 0,
+                            categoryData.love || 0
+                        ],
+                        backgroundColor: [
+                            '#FFD93D',
+                            '#4682B4',
+                            '#FF6B6B',
+                            '#6C5CE7',
+                            '#FFA502',
+                            '#FD79A8'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // 진도 분포 차트
+            const progressCtx = document.getElementById('progressChart').getContext('2d');
+            charts.progress = new Chart(progressCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['0-25%', '26-50%', '51-75%', '76-100%'],
+                    datasets: [{
+                        data: calculateProgressDistribution(),
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.5)',
+                            'rgba(245, 158, 11, 0.5)',
+                            'rgba(59, 130, 246, 0.5)',
+                            'rgba(34, 197, 94, 0.5)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // 포인트 분포 차트
+            const pointsCtx = document.getElementById('pointsChart').getContext('2d');
+            charts.points = new Chart(pointsCtx, {
+                type: 'line',
+                data: {
+                    labels: students.map(s => s.profile?.name || '익명'),
+                    datasets: [{
+                        label: '획득 포인트',
+                        data: students.map(s => s.statistics?.totalPoints || 0),
+                        borderColor: 'rgb(251, 191, 36)',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 카테고리 분포 계산
+        function calculateCategoryDistribution() {
+            const distribution = {};
+            
+            students.forEach(student => {
+                if (student.collections?.collectedCards) {
+                    student.collections.collectedCards.forEach(cardId => {
+                        const card = emotionCards.find(c => c.id === cardId);
+                        if (card) {
+                            distribution[card.category] = (distribution[card.category] || 0) + 1;
+                        }
+                    });
+                }
+            });
+            
+            return distribution;
+        }
+
+        // 진도 분포 계산
+        function calculateProgressDistribution() {
+            const ranges = [0, 0, 0, 0];
+            
+            students.forEach(student => {
+                const rate = student.statistics?.completionRate || 0;
+                if (rate <= 25) ranges[0]++;
+                else if (rate <= 50) ranges[1]++;
+                else if (rate <= 75) ranges[2]++;
+                else ranges[3]++;
+            });
+            
+            return ranges;
+        }
+
+        // 학생 테이블 생성
+        function createStudentTable() {
+            const tbody = document.getElementById('studentTable');
+            tbody.innerHTML = '';
+            
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.className = 'student-row border-b';
+                
+                const favoriteCategory = getFavoriteCategory(student);
+                const recommendation = getRecommendation(student);
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 font-medium">${student.profile?.name || '익명'}</td>
+                    <td class="px-4 py-3 text-center text-2xl">${student.profile?.avatar || '🦁'}</td>
+                    <td class="px-4 py-3 text-center">${student.collections?.collectedCards?.length || 0}</td>
+                    <td class="px-4 py-3 text-center">${student.collections?.customCards?.length || 0}</td>
+                    <td class="px-4 py-3 text-center">${student.statistics?.totalPoints || 0}</td>
+                    <td class="px-4 py-3 text-center">
+                        <div class="flex items-center justify-center">
+                            <div class="w-16 bg-gray-200 rounded-full h-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: ${student.statistics?.completionRate || 0}%"></div>
+                            </div>
+                            <span class="ml-2 text-sm">${student.statistics?.completionRate || 0}%</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="px-2 py-1 rounded-full text-xs ${getCategoryColor(favoriteCategory)}">
+                            ${getCategoryName(favoriteCategory)}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center text-sm">${recommendation}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // 즐겨찾는 카테고리 찾기
+        function getFavoriteCategory(student) {
+            const categoryCount = {};
+            
+            if (student.collections?.collectedCards) {
+                student.collections.collectedCards.forEach(cardId => {
+                    const card = emotionCards.find(c => c.id === cardId);
+                    if (card) {
+                        categoryCount[card.category] = (categoryCount[card.category] || 0) + 1;
+                    }
+                });
+            }
+            
+            let maxCategory = 'happy';
+            let maxCount = 0;
+            
+            for (const [category, count] of Object.entries(categoryCount)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    maxCategory = category;
+                }
+            }
+            
+            return maxCategory;
+        }
+
+        // 카테고리 색상
+        function getCategoryColor(category) {
+            const colors = {
+                happy: 'bg-yellow-100 text-yellow-800',
+                sad: 'bg-blue-100 text-blue-800',
+                angry: 'bg-red-100 text-red-800',
+                fear: 'bg-purple-100 text-purple-800',
+                surprise: 'bg-orange-100 text-orange-800',
+                love: 'bg-pink-100 text-pink-800'
+            };
+            return colors[category] || 'bg-gray-100 text-gray-800';
+        }
+
+        // 카테고리 이름
+        function getCategoryName(category) {
+            const names = {
+                happy: '기쁨',
+                sad: '슬픔',
+                angry: '화남',
+                fear: '두려움',
+                surprise: '놀람',
+                love: '사랑'
+            };
+            return names[category] || '기타';
+        }
+
+        // 추천 활동
+        function getRecommendation(student) {
+            const progress = student.statistics?.completionRate || 0;
+            
+            if (progress < 30) {
+                return '🎯 감정 카드 수집하기';
+            } else if (progress < 60) {
+                return '✏️ 나만의 카드 만들기';
+            } else if (progress < 90) {
+                return '🎮 감정 게임 도전';
+            } else {
+                return '🌟 다른 친구 도와주기';
+            }
+        }
+
+        // 추천 생성
+        function generateRecommendations() {
+            // 학급 전체 추천
+            const classRec = document.getElementById('classRecommendations');
+            const avgProgress = students.reduce((sum, s) => sum + (s.statistics?.completionRate || 0), 0) / students.length;
+            
+            classRec.innerHTML = '';
+            
+            if (avgProgress < 50) {
+                classRec.innerHTML = `
+                    <li>• 📚 기본 감정 카드 수집 활동 강화</li>
+                    <li>• 🎮 게임을 통한 흥미 유발</li>
+                    <li>• 👥 짝 활동으로 동기 부여</li>
+                `;
+            } else {
+                classRec.innerHTML = `
+                    <li>• ✨ 창의적인 카드 제작 활동</li>
+                    <li>• 🎭 감정 역할극 활동</li>
+                    <li>• 📝 감정 일기 작성하기</li>
+                `;
+            }
+            
+            // 개별 추천
+            const individualRec = document.getElementById('individualRecommendations');
+            individualRec.innerHTML = '';
+            
+            const lowProgress = students.filter(s => (s.statistics?.completionRate || 0) < 30);
+            if (lowProgress.length > 0) {
+                const div = document.createElement('div');
+                div.className = 'bg-red-50 p-3 rounded-lg';
+                div.innerHTML = `
+                    <p class="font-medium text-red-800 mb-1">📍 추가 지원 필요</p>
+                    <p class="text-sm text-gray-700">${lowProgress.map(s => s.profile?.name || '익명').join(', ')}</p>
+                `;
+                individualRec.appendChild(div);
+            }
+            
+            const highProgress = students.filter(s => (s.statistics?.completionRate || 0) >= 80);
+            if (highProgress.length > 0) {
+                const div = document.createElement('div');
+                div.className = 'bg-blue-50 p-3 rounded-lg';
+                div.innerHTML = `
+                    <p class="font-medium text-blue-800 mb-1">🌟 또래 도우미 추천</p>
+                    <p class="text-sm text-gray-700">${highProgress.map(s => s.profile?.name || '익명').join(', ')}</p>
+                `;
+                individualRec.appendChild(div);
+            }
+        }
+
+        // 탭 전환
+        function showAnalysisTab(tab) {
+            // 모든 탭 숨기기
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // 모든 버튼 스타일 초기화
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-purple-500', 'text-white');
+                btn.classList.add('bg-gray-200');
+            });
+            
+            // 선택된 탭 표시
+            document.getElementById(tab + 'Tab').classList.remove('hidden');
+            event.target.classList.add('active', 'bg-purple-500', 'text-white');
+            event.target.classList.remove('bg-gray-200');
+            
+            // 추가 차트 생성 (필요시)
+            if (tab === 'emotions' && !charts.emotionRadar) {
+                createEmotionRadarChart();
+                createPopularCards();
+            } else if (tab === 'timeline' && !charts.timeline) {
+                createTimelineChart();
+            }
+        }
+
+        // 감정 레이더 차트
+        function createEmotionRadarChart() {
+            const ctx = document.getElementById('emotionRadarChart').getContext('2d');
+            
+            const categories = ['happy', 'sad', 'angry', 'fear', 'surprise', 'love'];
+            const categoryNames = ['기쁨', '슬픔', '화남', '두려움', '놀람', '사랑'];
+            
+            // 각 카테고리별 평균 수집률 계산
+            const avgData = categories.map(category => {
+                const categoryCards = emotionCards.filter(c => c.category === category);
+                let totalCollected = 0;
+                
+                students.forEach(student => {
+                    if (student.collections?.collectedCards) {
+                        const collected = categoryCards.filter(card => 
+                            student.collections.collectedCards.includes(card.id)
+                        ).length;
+                        totalCollected += (collected / categoryCards.length) * 100;
+                    }
+                });
+                
+                return Math.round(totalCollected / students.length);
+            });
+            
+            charts.emotionRadar = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: categoryNames,
+                    datasets: [{
+                        label: '평균 수집률 (%)',
+                        data: avgData,
+                        borderColor: 'rgb(147, 51, 234)',
+                        backgroundColor: 'rgba(147, 51, 234, 0.2)',
+                        pointBackgroundColor: 'rgb(147, 51, 234)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(147, 51, 234)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // 인기 카드 표시
+        function createPopularCards() {
+            const container = document.getElementById('popularCardsContainer');
+            const cardCount = {};
+            
+            students.forEach(student => {
+                if (student.collections?.collectedCards) {
+                    student.collections.collectedCards.forEach(cardId => {
+                        cardCount[cardId] = (cardCount[cardId] || 0) + 1;
+                    });
+                }
+            });
+            
+            const sortedCards = Object.entries(cardCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+            
+            container.innerHTML = sortedCards.map(([cardId, count]) => {
+                const card = emotionCards.find(c => c.id === parseInt(cardId));
+                if (!card) return '';
+                
+                return `
+                    <div class="flex items-center justify-between bg-white p-2 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${card.emoji}</span>
+                            <span class="font-medium">${card.name}</span>
+                        </div>
+                        <span class="text-sm text-gray-500">${count}명</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 타임라인 차트
+        function createTimelineChart() {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            
+            // 날짜별 활동 집계
+            const dailyActivity = {};
+            
+            students.forEach(student => {
+                if (student.timeline) {
+                    student.timeline.forEach(day => {
+                        const date = day.date;
+                        if (!dailyActivity[date]) {
+                            dailyActivity[date] = 0;
+                        }
+                        dailyActivity[date] += day.activities?.length || 0;
+                    });
+                }
+            });
+            
+            const sortedDates = Object.keys(dailyActivity).sort();
+            
+            charts.timeline = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates.map(d => new Date(d).toLocaleDateString('ko-KR')),
+                    datasets: [{
+                        label: '일별 활동 수',
+                        data: sortedDates.map(d => dailyActivity[d]),
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // PDF 리포트 생성
+        function generatePDFReport() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // 폰트 설정 (한글 지원을 위해)
+            doc.setFont('helvetica');
+            
+            // 제목
+            doc.setFontSize(20);
+            doc.text('Class Emotion Education Report', 105, 20, { align: 'center' });
+            
+            // 기본 정보
+            doc.setFontSize(12);
+            doc.text(`Class: ${className}`, 20, 40);
+            doc.text(`Date: ${new Date().toLocaleDateString('ko-KR')}`, 20, 50);
+            doc.text(`Total Students: ${students.length}`, 20, 60);
+            
+            // 통계 테이블
+            const avgProgress = Math.round(
+                students.reduce((sum, s) => sum + (s.statistics?.completionRate || 0), 0) / students.length
+            );
+            const avgPoints = Math.round(
+                students.reduce((sum, s) => sum + (s.statistics?.totalPoints || 0), 0) / students.length
+            );
+            
+            const stats = [
+                ['Item', 'Average', 'Max', 'Min'],
+                ['Collected Cards', 
+                 Math.round(students.reduce((sum, s) => sum + (s.collections?.collectedCards?.length || 0), 0) / students.length),
+                 Math.max(...students.map(s => s.collections?.collectedCards?.length || 0)),
+                 Math.min(...students.map(s => s.collections?.collectedCards?.length || 0))
+                ],
+                ['Points', avgPoints,
+                 Math.max(...students.map(s => s.statistics?.totalPoints || 0)),
+                 Math.min(...students.map(s => s.statistics?.totalPoints || 0))
+                ],
+                ['Progress (%)', avgProgress,
+                 Math.max(...students.map(s => s.statistics?.completionRate || 0)),
+                 Math.min(...students.map(s => s.statistics?.completionRate || 0))
+                ]
+            ];
+            
+            doc.autoTable({
+                head: [stats[0]],
+                body: stats.slice(1),
+                startY: 80
+            });
+            
+            // 개인별 정보
+            doc.addPage();
+            doc.setFontSize(16);
+            doc.text('Individual Student Analysis', 20, 20);
+            
+            const studentData = students.map(s => [
+                s.profile?.name || 'Anonymous',
+                s.collections?.collectedCards?.length || 0,
+                s.collections?.customCards?.length || 0,
+                s.statistics?.totalPoints || 0,
+                `${s.statistics?.completionRate || 0}%`
+            ]);
+            
+            doc.autoTable({
+                head: [['Name', 'Collected', 'Created', 'Points', 'Progress']],
+                body: studentData,
+                startY: 30
+            });
+            
+            // 저장
+            doc.save(`Class_Report_${className}_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        // Excel 내보내기
+        function exportToExcel() {
+            const wb = XLSX.utils.book_new();
+            
+            // 학생 데이터 시트
+            const studentData = students.map(s => ({
+                '이름': s.profile?.name || '익명',
+                '학급': s.profile?.className || '',
+                '아바타': s.profile?.avatar || '',
+                '수집한 카드': s.collections?.collectedCards?.length || 0,
+                '만든 카드': s.collections?.customCards?.length || 0,
+                '포인트': s.statistics?.totalPoints || 0,
+                '진도율(%)': s.statistics?.completionRate || 0,
+                '주요 감정': getCategoryName(getFavoriteCategory(s))
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(studentData);
+            XLSX.utils.book_append_sheet(wb, ws, '학생 분석');
+            
+            // 통계 시트
+            const statsData = [{
+                '항목': '학생 수',
+                '값': students.length
+            }, {
+                '항목': '평균 진도율',
+                '값': Math.round(students.reduce((sum, s) => sum + (s.statistics?.completionRate || 0), 0) / students.length) + '%'
+            }, {
+                '항목': '평균 포인트',
+                '값': Math.round(students.reduce((sum, s) => sum + (s.statistics?.totalPoints || 0), 0) / students.length)
+            }];
+            
+            const ws2 = XLSX.utils.json_to_sheet(statsData);
+            XLSX.utils.book_append_sheet(wb, ws2, '통계');
+            
+            // 파일 다운로드
+            XLSX.writeFile(wb, `학급분석_${className}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 드롭존 클릭 이벤트
+            document.getElementById('dropzone').addEventListener('click', function() {
+                document.getElementById('fileInput').click();
+            });
+        });
+    </script>
+</body>
+</html>
