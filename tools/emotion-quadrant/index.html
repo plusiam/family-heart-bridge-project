@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 감정 4분면 - 감정의 에너지와 방향 이해하기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .title-font {
+            font-family: 'Jua', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 4분면 컨테이너 */
+        .quadrant-board {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            max-width: 90vw;
+            max-height: 90vw;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* 4분면 영역 */
+        .quadrant-section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.3;
+            transition: opacity 0.3s ease;
+        }
+        
+        .quadrant-section:hover {
+            opacity: 0.5;
+        }
+        
+        .q-top-right {
+            top: 0;
+            right: 0;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+        }
+        
+        .q-top-left {
+            top: 0;
+            left: 0;
+            background: linear-gradient(135deg, #ff7675 0%, #fd79a8 100%);
+        }
+        
+        .q-bottom-left {
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(135deg, #74b9ff 0%, #a29bfe 100%);
+        }
+        
+        .q-bottom-right {
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(135deg, #55efc4 0%, #81ecec 100%);
+        }
+        
+        /* 축 */
+        .axis {
+            position: absolute;
+            background: #4a5568;
+            z-index: 5;
+        }
+        
+        .axis-x {
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+        
+        .axis-y {
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+        
+        /* 축 레이블 */
+        .axis-label {
+            position: absolute;
+            background: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .label-energy-high {
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #f59e0b;
+        }
+        
+        .label-energy-low {
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #3b82f6;
+        }
+        
+        .label-mood-negative {
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ef4444;
+        }
+        
+        .label-mood-positive {
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #10b981;
+        }
+        
+        /* 감정 점 */
+        .emotion-point {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: move;
+            transition: transform 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 20;
+            user-select: none;
+        }
+        
+        .emotion-point:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            z-index: 30;
+        }
+        
+        .emotion-point.dragging {
+            cursor: grabbing;
+            transform: scale(1.15);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        
+        /* 감정 이름 표시 */
+        .emotion-label {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .emotion-point:hover .emotion-label {
+            opacity: 1;
+        }
+        
+        /* 감정 선택 버튼 */
+        .emotion-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .emotion-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .emotion-btn.placed {
+            background: #f3f4f6;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .emotion-btn.placed:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* 분면 정보 카드 */
+        .quadrant-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .quadrant-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .quadrant-card.active {
+            border: 2px solid #667eea;
+            background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%);
+        }
+        
+        /* 분석 결과 카드 */
+        .analysis-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .analysis-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        /* 활동 카드 */
+        .activity-card {
+            background: white;
+            border-radius: 15px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .activity-card:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(102,126,234,0.2);
+        }
+        
+        /* 차트 컨테이너 */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+        
+        /* 애니메이션 */
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        /* 모바일 대응 */
+        @media (max-width: 640px) {
+            .quadrant-board {
+                width: 350px;
+                height: 350px;
+            }
+            
+            .emotion-point {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            
+            .axis-label {
+                font-size: 10px;
+                padding: 2px 8px;
+            }
+        }
+        
+        /* 툴팁 */
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .tooltip.show {
+            opacity: 1;
+        }
+        
+        /* 스위치 버튼 */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <!-- 헤더 -->
+    <header class="glass-effect shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-4xl float-animation">🎯</span>
+                    <div>
+                        <h1 class="title-font text-2xl md:text-3xl text-gray-800">감정 4분면</h1>
+                        <p class="text-sm text-gray-600">감정의 에너지와 기분을 시각화해요</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-100 px-4 py-2 rounded-full">
+                        <span class="text-purple-700 font-bold">
+                            📍 <span id="emotionCount">0</span>개 감정
+                        </span>
+                    </div>
+                    <button onclick="window.location.href='../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                        🏠 메인으로
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- 소개 배너 -->
+        <div class="glass-effect rounded-3xl p-6 mb-8">
+            <div class="text-center">
+                <h2 class="title-font text-3xl text-gray-800 mb-4">감정을 2차원으로 이해하기</h2>
+                <p class="text-gray-600 mb-6">
+                    모든 감정은 <span class="font-bold text-orange-500">에너지 수준</span>과 
+                    <span class="font-bold text-green-500">긍정/부정 정도</span>로 분류할 수 있어요
+                </p>
+                
+                <!-- 4분면 미니 설명 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="quadrant-card" onclick="showQuadrantDetail(1)">
+                        <div class="text-3xl mb-2">😄</div>
+                        <h3 class="font-bold text-yellow-600">활기찬</h3>
+                        <p class="text-xs text-gray-600 mt-1">높은 에너지 + 긍정적</p>
+                    </div>
+                    <div class="quadrant-card" onclick="showQuadrantDetail(2)">
+                        <div class="text-3xl mb-2">😤</div>
+                        <h3 class="font-bold text-red-600">격렬한</h3>
+                        <p class="text-xs text-gray-600 mt-1">높은 에너지 + 부정적</p>
+                    </div>
+                    <div class="quadrant-card" onclick="showQuadrantDetail(3)">
+                        <div class="text-3xl mb-2">😢</div>
+                        <h3 class="font-bold text-blue-600">가라앉은</h3>
+                        <p class="text-xs text-gray-600 mt-1">낮은 에너지 + 부정적</p>
+                    </div>
+                    <div class="quadrant-card" onclick="showQuadrantDetail(4)">
+                        <div class="text-3xl mb-2">😌</div>
+                        <h3 class="font-bold text-green-600">평온한</h3>
+                        <p class="text-xs text-gray-600 mt-1">낮은 에너지 + 긍정적</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 탭 네비게이션 -->
+        <div class="flex justify-center mb-8">
+            <div class="glass-effect rounded-full p-1 inline-flex">
+                <button onclick="showTab('create')" id="createTab" class="tab-btn px-6 py-2 rounded-full bg-purple-500 text-white transition">
+                    🎨 4분면 만들기
+                </button>
+                <button onclick="showTab('analyze')" id="analyzeTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    📊 감정 분석
+                </button>
+                <button onclick="showTab('recommend')" id="recommendTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    💡 활동 추천
+                </button>
+                <button onclick="showTab('history')" id="historyTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    📚 기록 보기
+                </button>
+            </div>
+        </div>
+
+        <!-- 4분면 만들기 탭 -->
+        <div id="createContent" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 왼쪽: 4분면 보드 -->
+                <div>
+                    <div class="glass-effect rounded-3xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg text-gray-800">나의 감정 4분면</h3>
+                            <div class="flex gap-2">
+                                <button onclick="clearBoard()" class="px-3 py-1 bg-red-500 text-white text-sm rounded-full hover:bg-red-600 transition">
+                                    🗑️ 초기화
+                                </button>
+                                <button onclick="saveQuadrant()" class="px-3 py-1 bg-green-500 text-white text-sm rounded-full hover:bg-green-600 transition">
+                                    💾 저장
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="quadrant-board" id="quadrantBoard">
+                            <!-- 4분면 배경 -->
+                            <div class="quadrant-section q-top-right"></div>
+                            <div class="quadrant-section q-top-left"></div>
+                            <div class="quadrant-section q-bottom-left"></div>
+                            <div class="quadrant-section q-bottom-right"></div>
+                            
+                            <!-- 축 -->
+                            <div class="axis axis-x"></div>
+                            <div class="axis axis-y"></div>
+                            
+                            <!-- 축 레이블 -->
+                            <div class="axis-label label-energy-high">⬆️ 높은 에너지</div>
+                            <div class="axis-label label-energy-low">⬇️ 낮은 에너지</div>
+                            <div class="axis-label label-mood-negative">⬅️ 부정적</div>
+                            <div class="axis-label label-mood-positive">➡️ 긍정적</div>
+                        </div>
+                        
+                        <!-- 좌표 표시 -->
+                        <div class="mt-4 text-center">
+                            <div class="inline-block bg-white rounded-full px-4 py-2 shadow-md">
+                                <span class="text-sm font-bold text-gray-600">좌표: </span>
+                                <span id="coordinateDisplay" class="text-sm font-bold text-purple-600">X: 0, Y: 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 오른쪽: 감정 선택 패널 -->
+                <div>
+                    <div class="glass-effect rounded-3xl p-6">
+                        <h3 class="font-bold text-lg text-gray-800 mb-4">감정 선택하기</h3>
+                        
+                        <!-- 빠른 선택 -->
+                        <div class="mb-6">
+                            <h4 class="font-bold text-sm text-gray-600 mb-3">🚀 빠른 선택</h4>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="quickPlace('happy')" class="px-4 py-3 bg-yellow-100 rounded-xl hover:bg-yellow-200 transition">
+                                    😊 지금 행복해요
+                                </button>
+                                <button onclick="quickPlace('sad')" class="px-4 py-3 bg-blue-100 rounded-xl hover:bg-blue-200 transition">
+                                    😢 조금 슬퍼요
+                                </button>
+                                <button onclick="quickPlace('angry')" class="px-4 py-3 bg-red-100 rounded-xl hover:bg-red-200 transition">
+                                    😠 화가 나요
+                                </button>
+                                <button onclick="quickPlace('calm')" class="px-4 py-3 bg-green-100 rounded-xl hover:bg-green-200 transition">
+                                    😌 차분해요
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 상세 감정 목록 -->
+                        <div>
+                            <h4 class="font-bold text-sm text-gray-600 mb-3">📝 상세 감정</h4>
+                            
+                            <!-- 1사분면 -->
+                            <div class="mb-4">
+                                <h5 class="text-xs font-bold text-yellow-600 mb-2">활기찬 감정 (1사분면)</h5>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="addEmotion('😄', '기쁨', 70, 70)" class="emotion-btn">
+                                        <span>😄</span><span>기쁨</span>
+                                    </button>
+                                    <button onclick="addEmotion('🤗', '신남', 80, 60)" class="emotion-btn">
+                                        <span>🤗</span><span>신남</span>
+                                    </button>
+                                    <button onclick="addEmotion('🥳', '흥분', 90, 80)" class="emotion-btn">
+                                        <span>🥳</span><span>흥분</span>
+                                    </button>
+                                    <button onclick="addEmotion('😍', '사랑', 60, 85)" class="emotion-btn">
+                                        <span>😍</span><span>사랑</span>
+                                    </button>
+                                    <button onclick="addEmotion('💪', '자신감', 75, 65)" class="emotion-btn">
+                                        <span>💪</span><span>자신감</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 2사분면 -->
+                            <div class="mb-4">
+                                <h5 class="text-xs font-bold text-red-600 mb-2">격렬한 감정 (2사분면)</h5>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="addEmotion('😠', '화남', -70, 70)" class="emotion-btn">
+                                        <span>😠</span><span>화남</span>
+                                    </button>
+                                    <button onclick="addEmotion('😤', '짜증', -60, 60)" class="emotion-btn">
+                                        <span>😤</span><span>짜증</span>
+                                    </button>
+                                    <button onclick="addEmotion('😨', '두려움', -80, 75)" class="emotion-btn">
+                                        <span>😨</span><span>두려움</span>
+                                    </button>
+                                    <button onclick="addEmotion('😰', '불안', -75, 80)" class="emotion-btn">
+                                        <span>😰</span><span>불안</span>
+                                    </button>
+                                    <button onclick="addEmotion('😫', '스트레스', -85, 85)" class="emotion-btn">
+                                        <span>😫</span><span>스트레스</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 3사분면 -->
+                            <div class="mb-4">
+                                <h5 class="text-xs font-bold text-blue-600 mb-2">가라앉은 감정 (3사분면)</h5>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="addEmotion('😢', '슬픔', -70, -70)" class="emotion-btn">
+                                        <span>😢</span><span>슬픔</span>
+                                    </button>
+                                    <button onclick="addEmotion('😔', '우울', -80, -80)" class="emotion-btn">
+                                        <span>😔</span><span>우울</span>
+                                    </button>
+                                    <button onclick="addEmotion('😞', '실망', -60, -60)" class="emotion-btn">
+                                        <span>😞</span><span>실망</span>
+                                    </button>
+                                    <button onclick="addEmotion('😴', '피곤', -50, -75)" class="emotion-btn">
+                                        <span>😴</span><span>피곤</span>
+                                    </button>
+                                    <button onclick="addEmotion('😪', '무기력', -85, -85)" class="emotion-btn">
+                                        <span>😪</span><span>무기력</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 4사분면 -->
+                            <div class="mb-4">
+                                <h5 class="text-xs font-bold text-green-600 mb-2">평온한 감정 (4사분면)</h5>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="addEmotion('😌', '평온', 70, -70)" class="emotion-btn">
+                                        <span>😌</span><span>평온</span>
+                                    </button>
+                                    <button onclick="addEmotion('😊', '만족', 60, -60)" class="emotion-btn">
+                                        <span>😊</span><span>만족</span>
+                                    </button>
+                                    <button onclick="addEmotion('🙏', '감사', 75, -50)" class="emotion-btn">
+                                        <span>🙏</span><span>감사</span>
+                                    </button>
+                                    <button onclick="addEmotion('😇', '평화', 80, -75)" class="emotion-btn">
+                                        <span>😇</span><span>평화</span>
+                                    </button>
+                                    <button onclick="addEmotion('☺️', '안도', 50, -65)" class="emotion-btn">
+                                        <span>☺️</span><span>안도</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 커스텀 감정 -->
+                        <div class="mt-6 bg-purple-50 rounded-xl p-4">
+                            <h4 class="font-bold text-sm text-purple-700 mb-3">✨ 나만의 감정 추가</h4>
+                            <div class="flex gap-2">
+                                <input type="text" id="customName" placeholder="감정 이름" class="flex-1 px-3 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-400 focus:outline-none text-sm">
+                                <select id="customEmoji" class="px-3 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-400 focus:outline-none">
+                                    <option>💭</option>
+                                    <option>💗</option>
+                                    <option>💢</option>
+                                    <option>💧</option>
+                                    <option>✨</option>
+                                    <option>🌟</option>
+                                    <option>💫</option>
+                                </select>
+                                <button onclick="addCustomEmotion()" class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition text-sm">
+                                    추가
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 감정 분석 탭 -->
+        <div id="analyzeContent" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- 분석 카드 -->
+                <div class="analysis-card">
+                    <h3 class="text-xl font-bold mb-4">📊 감정 분포</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>긍정적 감정</span>
+                                <span id="positivePercent">0%</span>
+                            </div>
+                            <div class="w-full bg-white/30 rounded-full h-2">
+                                <div id="positiveBar" class="bg-white rounded-full h-2 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>에너지 수준</span>
+                                <span id="energyPercent">0%</span>
+                            </div>
+                            <div class="w-full bg-white/30 rounded-full h-2">
+                                <div id="energyBar" class="bg-white rounded-full h-2 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 주요 감정 -->
+                <div class="glass-effect rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">🎯 주요 감정</h3>
+                    <div id="dominantEmotions" class="space-y-2">
+                        <p class="text-gray-500 text-sm">감정을 배치하면 분석이 시작됩니다</p>
+                    </div>
+                </div>
+                
+                <!-- 추천 활동 -->
+                <div class="glass-effect rounded-3xl p-6">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">💡 추천 활동</h3>
+                    <div id="recommendedActivities" class="space-y-2">
+                        <p class="text-gray-500 text-sm">감정 상태에 맞는 활동을 추천해드릴게요</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 차트 영역 -->
+            <div class="mt-6 glass-effect rounded-3xl p-6">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">📈 감정 차트</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="chart-container">
+                        <canvas id="quadrantChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="emotionRadar"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 활동 추천 탭 -->
+        <div id="recommendContent" class="tab-content hidden">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">지금 기분에 맞는 활동 찾기</h2>
+                
+                <!-- 감정 상태 선택 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <button onclick="showActivities('energetic')" class="quadrant-card bg-yellow-50">
+                        <div class="text-4xl mb-2">⚡</div>
+                        <h3 class="font-bold">활기찬</h3>
+                        <p class="text-xs text-gray-600">에너지가 넘칠 때</p>
+                    </button>
+                    <button onclick="showActivities('stressed')" class="quadrant-card bg-red-50">
+                        <div class="text-4xl mb-2">🔥</div>
+                        <h3 class="font-bold">스트레스</h3>
+                        <p class="text-xs text-gray-600">긴장되고 불안할 때</p>
+                    </button>
+                    <button onclick="showActivities('down')" class="quadrant-card bg-blue-50">
+                        <div class="text-4xl mb-2">💧</div>
+                        <h3 class="font-bold">우울한</h3>
+                        <p class="text-xs text-gray-600">기운이 없을 때</p>
+                    </button>
+                    <button onclick="showActivities('peaceful')" class="quadrant-card bg-green-50">
+                        <div class="text-4xl mb-2">🍃</div>
+                        <h3 class="font-bold">평온한</h3>
+                        <p class="text-xs text-gray-600">차분할 때</p>
+                    </button>
+                </div>
+                
+                <!-- 활동 목록 -->
+                <div id="activityList" class="space-y-4">
+                    <!-- 활동이 여기에 표시됨 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 기록 보기 탭 -->
+        <div id="historyContent" class="tab-content hidden">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">나의 감정 4분면 기록</h2>
+                
+                <!-- 기록 목록 -->
+                <div id="historyList" class="space-y-4">
+                    <!-- 기록이 여기에 표시됨 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 상세 정보 모달 -->
+    <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-3xl p-8 max-w-md mx-4">
+            <h3 id="modalTitle" class="text-2xl font-bold mb-4">분면 정보</h3>
+            <p id="modalContent" class="text-gray-600 mb-6"></p>
+            <button onclick="closeModal()" class="w-full px-6 py-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let emotions = [];
+        let draggedElement = null;
+        let board = null;
+        let quadrantChart = null;
+        let emotionRadar = null;
+        let savedQuadrants = JSON.parse(localStorage.getItem('emotionQuadrants') || '[]');
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            board = document.getElementById('quadrantBoard');
+            setupCharts();
+            loadHistory();
+            
+            // 드래그 이벤트 설정
+            board.addEventListener('dragover', handleDragOver);
+            board.addEventListener('drop', handleDrop);
+        });
+
+        // 탭 전환
+        function showTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-500', 'text-white');
+                btn.classList.add('hover:bg-purple-100');
+            });
+            
+            document.getElementById(tab + 'Content').classList.remove('hidden');
+            document.getElementById(tab + 'Tab').classList.add('bg-purple-500', 'text-white');
+            document.getElementById(tab + 'Tab').classList.remove('hover:bg-purple-100');
+            
+            if (tab === 'analyze') {
+                updateAnalysis();
+            }
+        }
+
+        // 감정 추가
+        function addEmotion(emoji, name, x, y) {
+            // 중복 체크
+            if (emotions.find(e => e.name === name)) {
+                alert('이미 추가된 감정입니다!');
+                return;
+            }
+            
+            // 감정 점 생성
+            const point = createEmotionPoint(emoji, name, x, y);
+            board.appendChild(point);
+            
+            // 데이터 저장
+            emotions.push({ emoji, name, x, y });
+            
+            // 버튼 비활성화
+            event.target?.classList.add('placed');
+            
+            // 업데이트
+            updateDisplay();
+        }
+
+        // 감정 점 생성
+        function createEmotionPoint(emoji, name, x, y) {
+            const point = document.createElement('div');
+            point.className = 'emotion-point';
+            point.draggable = true;
+            point.dataset.name = name;
+            point.dataset.x = x;
+            point.dataset.y = y;
+            
+            // 내용 추가
+            point.innerHTML = `
+                ${emoji}
+                <span class="emotion-label">${name}</span>
+            `;
+            
+            // 위치 설정
+            const boardRect = board.getBoundingClientRect();
+            const centerX = boardRect.width / 2;
+            const centerY = boardRect.height / 2;
+            
+            const pixelX = centerX + (x / 100) * (centerX - 25);
+            const pixelY = centerY - (y / 100) * (centerY - 25);
+            
+            point.style.left = pixelX - 25 + 'px';
+            point.style.top = pixelY - 25 + 'px';
+            
+            // 드래그 이벤트
+            point.addEventListener('dragstart', handleDragStart);
+            point.addEventListener('dragend', handleDragEnd);
+            
+            // 더블클릭으로 제거
+            point.addEventListener('dblclick', function() {
+                if (confirm(`"${name}" 감정을 제거하시겠습니까?`)) {
+                    removeEmotion(name);
+                }
+            });
+            
+            return point;
+        }
+
+        // 드래그 시작
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        // 드래그 종료
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedElement = null;
+        }
+
+        // 드래그 오버
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            // 좌표 표시
+            const rect = board.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const coordX = Math.round(((x - centerX) / (centerX - 25)) * 100);
+            const coordY = Math.round(((centerY - y) / (centerY - 25)) * 100);
+            
+            updateCoordinate(coordX, coordY);
+        }
+
+        // 드롭
+        function handleDrop(e) {
+            e.preventDefault();
+            
+            if (!draggedElement) return;
+            
+            const rect = board.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // 경계 체크
+            const newX = Math.max(25, Math.min(rect.width - 25, x));
+            const newY = Math.max(25, Math.min(rect.height - 25, y));
+            
+            draggedElement.style.left = newX - 25 + 'px';
+            draggedElement.style.top = newY - 25 + 'px';
+            
+            // 좌표 계산
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const coordX = Math.round(((newX - centerX) / (centerX - 25)) * 100);
+            const coordY = Math.round(((centerY - newY) / (centerY - 25)) * 100);
+            
+            // 데이터 업데이트
+            const name = draggedElement.dataset.name;
+            const emotion = emotions.find(e => e.name === name);
+            if (emotion) {
+                emotion.x = coordX;
+                emotion.y = coordY;
+                draggedElement.dataset.x = coordX;
+                draggedElement.dataset.y = coordY;
+            }
+            
+            updateDisplay();
+        }
+
+        // 감정 제거
+        function removeEmotion(name) {
+            // DOM에서 제거
+            const point = board.querySelector(`[data-name="${name}"]`);
+            if (point) point.remove();
+            
+            // 데이터에서 제거
+            emotions = emotions.filter(e => e.name !== name);
+            
+            // 버튼 활성화
+            document.querySelectorAll('.emotion-btn.placed').forEach(btn => {
+                if (btn.textContent.includes(name)) {
+                    btn.classList.remove('placed');
+                }
+            });
+            
+            updateDisplay();
+        }
+
+        // 빠른 배치
+        function quickPlace(type) {
+            const quickEmotions = {
+                happy: { emoji: '😊', name: '행복', x: 70, y: 70 },
+                sad: { emoji: '😢', name: '슬픔', x: -70, y: -70 },
+                angry: { emoji: '😠', name: '화남', x: -70, y: 70 },
+                calm: { emoji: '😌', name: '차분', x: 70, y: -70 }
+            };
+            
+            const emotion = quickEmotions[type];
+            addEmotion(emotion.emoji, emotion.name, emotion.x, emotion.y);
+        }
+
+        // 커스텀 감정 추가
+        function addCustomEmotion() {
+            const name = document.getElementById('customName').value.trim();
+            const emoji = document.getElementById('customEmoji').value;
+            
+            if (!name) {
+                alert('감정 이름을 입력해주세요!');
+                return;
+            }
+            
+            // 랜덤 위치
+            const x = Math.floor(Math.random() * 160) - 80;
+            const y = Math.floor(Math.random() * 160) - 80;
+            
+            addEmotion(emoji, name, x, y);
+            
+            // 입력 초기화
+            document.getElementById('customName').value = '';
+        }
+
+        // 보드 초기화
+        function clearBoard() {
+            if (emotions.length === 0) return;
+            
+            if (confirm('모든 감정을 삭제하시겠습니까?')) {
+                board.querySelectorAll('.emotion-point').forEach(point => point.remove());
+                emotions = [];
+                
+                document.querySelectorAll('.emotion-btn.placed').forEach(btn => {
+                    btn.classList.remove('placed');
+                });
+                
+                updateDisplay();
+            }
+        }
+
+        // 4분면 저장
+        function saveQuadrant() {
+            if (emotions.length === 0) {
+                alert('최소 하나의 감정을 추가해주세요!');
+                return;
+            }
+            
+            const quadrant = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                emotions: [...emotions]
+            };
+            
+            savedQuadrants.push(quadrant);
+            localStorage.setItem('emotionQuadrants', JSON.stringify(savedQuadrants));
+            
+            alert('감정 4분면이 저장되었습니다! 🎉');
+            loadHistory();
+        }
+
+        // 좌표 업데이트
+        function updateCoordinate(x, y) {
+            document.getElementById('coordinateDisplay').textContent = `X: ${x}, Y: ${y}`;
+        }
+
+        // 디스플레이 업데이트
+        function updateDisplay() {
+            document.getElementById('emotionCount').textContent = emotions.length;
+            
+            if (emotions.length > 0) {
+                updateAnalysis();
+            }
+        }
+
+        // 분석 업데이트
+        function updateAnalysis() {
+            if (emotions.length === 0) return;
+            
+            // 분면별 카운트
+            const quadrants = [0, 0, 0, 0];
+            let totalX = 0, totalY = 0;
+            
+            emotions.forEach(e => {
+                totalX += e.x;
+                totalY += e.y;
+                
+                if (e.x > 0 && e.y > 0) quadrants[0]++;
+                else if (e.x < 0 && e.y > 0) quadrants[1]++;
+                else if (e.x < 0 && e.y < 0) quadrants[2]++;
+                else quadrants[3]++;
+            });
+            
+            // 평균 계산
+            const avgX = totalX / emotions.length;
+            const avgY = totalY / emotions.length;
+            
+            // 긍정도와 에너지 계산
+            const positivePercent = Math.round((avgX + 100) / 2);
+            const energyPercent = Math.round((avgY + 100) / 2);
+            
+            // UI 업데이트
+            document.getElementById('positivePercent').textContent = positivePercent + '%';
+            document.getElementById('positiveBar').style.width = positivePercent + '%';
+            document.getElementById('energyPercent').textContent = energyPercent + '%';
+            document.getElementById('energyBar').style.width = energyPercent + '%';
+            
+            // 주요 감정 표시
+            updateDominantEmotions(quadrants);
+            
+            // 추천 활동
+            updateRecommendedActivities(avgX, avgY);
+            
+            // 차트 업데이트
+            updateCharts(quadrants);
+        }
+
+        // 주요 감정 업데이트
+        function updateDominantEmotions(quadrants) {
+            const quadrantNames = ['활기찬', '격렬한', '가라앉은', '평온한'];
+            const maxIndex = quadrants.indexOf(Math.max(...quadrants));
+            
+            const html = `
+                <div class="p-3 bg-purple-50 rounded-lg">
+                    <p class="font-bold text-purple-700">${quadrantNames[maxIndex]} 감정이 주를 이루고 있어요</p>
+                </div>
+                <div class="text-sm text-gray-600">
+                    ${emotions.slice(0, 3).map(e => `${e.emoji} ${e.name}`).join(', ')}
+                </div>
+            `;
+            
+            document.getElementById('dominantEmotions').innerHTML = html;
+        }
+
+        // 추천 활동 업데이트
+        function updateRecommendedActivities(avgX, avgY) {
+            let activities = [];
+            
+            if (avgX > 0 && avgY > 0) {
+                activities = ['🏃 운동하기', '🎵 음악 듣기', '👫 친구 만나기'];
+            } else if (avgX < 0 && avgY > 0) {
+                activities = ['🧘 명상하기', '✏️ 일기 쓰기', '🚶 산책하기'];
+            } else if (avgX < 0 && avgY < 0) {
+                activities = ['🛁 따뜻한 목욕', '☕ 차 마시기', '📺 영화 보기'];
+            } else {
+                activities = ['📚 독서하기', '🎨 그림 그리기', '🌱 식물 돌보기'];
+            }
+            
+            const html = activities.map(a => `
+                <div class="activity-card">
+                    <span>${a}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('recommendedActivities').innerHTML = html;
+        }
+
+        // 차트 설정
+        function setupCharts() {
+            // 4분면 차트
+            const ctx1 = document.getElementById('quadrantChart');
+            if (ctx1) {
+                quadrantChart = new Chart(ctx1.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['활기찬', '격렬한', '가라앉은', '평온한'],
+                        datasets: [{
+                            label: '감정 수',
+                            data: [0, 0, 0, 0],
+                            backgroundColor: [
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(75, 192, 192, 0.6)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // 레이더 차트
+            const ctx2 = document.getElementById('emotionRadar');
+            if (ctx2) {
+                emotionRadar = new Chart(ctx2.getContext('2d'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['긍정', '에너지', '안정', '활력'],
+                        datasets: [{
+                            label: '감정 균형',
+                            data: [0, 0, 0, 0],
+                            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                            borderColor: '#667eea',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 차트 업데이트
+        function updateCharts(quadrants) {
+            if (quadrantChart) {
+                quadrantChart.data.datasets[0].data = quadrants;
+                quadrantChart.update();
+            }
+            
+            if (emotionRadar) {
+                const avgX = emotions.reduce((sum, e) => sum + e.x, 0) / emotions.length;
+                const avgY = emotions.reduce((sum, e) => sum + e.y, 0) / emotions.length;
+                
+                emotionRadar.data.datasets[0].data = [
+                    Math.max(0, Math.round((avgX + 100) / 2)),
+                    Math.max(0, Math.round((avgY + 100) / 2)),
+                    Math.max(0, Math.round((100 - Math.abs(avgY)) / 1)),
+                    Math.max(0, Math.round(Math.sqrt(avgX * avgX + avgY * avgY) / 1.4))
+                ];
+                emotionRadar.update();
+            }
+        }
+
+        // 활동 표시
+        function showActivities(type) {
+            const activities = {
+                energetic: [
+                    { icon: '🏃', title: '운동하기', desc: '에너지를 건강하게 발산해요' },
+                    { icon: '🎨', title: '창작 활동', desc: '새로운 것을 만들어보세요' },
+                    { icon: '🎮', title: '활동적인 게임', desc: '친구들과 함께 즐겨요' }
+                ],
+                stressed: [
+                    { icon: '🧘', title: '명상하기', desc: '마음을 차분하게 가라앉혀요' },
+                    { icon: '🎧', title: '음악 듣기', desc: '편안한 음악으로 휴식해요' },
+                    { icon: '✏️', title: '일기 쓰기', desc: '감정을 글로 표현해보세요' }
+                ],
+                down: [
+                    { icon: '☕', title: '따뜻한 차', desc: '몸과 마음을 따뜻하게' },
+                    { icon: '🤗', title: '포옹하기', desc: '사랑하는 사람과 함께' },
+                    { icon: '📺', title: '좋아하는 영상', desc: '기분 전환을 해보세요' }
+                ],
+                peaceful: [
+                    { icon: '📚', title: '독서하기', desc: '조용히 책을 읽어요' },
+                    { icon: '🌱', title: '식물 돌보기', desc: '자연과 함께해요' },
+                    { icon: '🧩', title: '퍼즐 맞추기', desc: '집중하며 시간을 보내요' }
+                ]
+            };
+            
+            const list = activities[type];
+            const html = list.map(a => `
+                <div class="activity-card">
+                    <span class="text-3xl">${a.icon}</span>
+                    <div>
+                        <h4 class="font-bold">${a.title}</h4>
+                        <p class="text-sm text-gray-600">${a.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('activityList').innerHTML = html;
+        }
+
+        // 기록 로드
+        function loadHistory() {
+            const list = document.getElementById('historyList');
+            
+            if (savedQuadrants.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500">저장된 기록이 없습니다</p>';
+            } else {
+                const html = savedQuadrants.slice(-5).reverse().map(q => {
+                    const date = new Date(q.date).toLocaleDateString();
+                    const emotions = q.emotions.map(e => e.emoji).join(' ');
+                    
+                    return `
+                        <div class="glass-effect rounded-xl p-4">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold">${date}</p>
+                                    <p class="text-sm text-gray-600">${q.emotions.length}개 감정</p>
+                                </div>
+                                <div>${emotions}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                list.innerHTML = html;
+            }
+        }
+
+        // 분면 상세 정보
+        function showQuadrantDetail(quadrant) {
+            const details = {
+                1: {
+                    title: '활기찬 감정 영역',
+                    content: '높은 에너지와 긍정적인 기분이 만나는 영역입니다. 이런 감정을 느낄 때는 새로운 도전을 하거나 창의적인 활동을 하기 좋습니다.'
+                },
+                2: {
+                    title: '격렬한 감정 영역',
+                    content: '높은 에너지지만 부정적인 기분인 상태입니다. 이런 감정을 느낄 때는 안전하게 감정을 발산하고 진정시키는 활동이 필요합니다.'
+                },
+                3: {
+                    title: '가라앉은 감정 영역',
+                    content: '낮은 에너지와 부정적인 기분이 만나는 영역입니다. 충분한 휴식과 자기 돌봄이 필요한 시기입니다.'
+                },
+                4: {
+                    title: '평온한 감정 영역',
+                    content: '낮은 에너지지만 긍정적인 기분인 상태입니다. 조용한 활동이나 명상, 감사 일기 쓰기 등에 적합합니다.'
+                }
+            };
+            
+            const detail = details[quadrant];
+            document.getElementById('modalTitle').textContent = detail.title;
+            document.getElementById('modalContent').textContent = detail.content;
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
