@@ -183,6 +183,34 @@
             background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
             transition: width 0.5s ease;
         }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+        }
+        
+        .avatar-selector {
+            display: inline-block;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .avatar-selector:hover {
+            background: rgba(147, 51, 234, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .avatar-selector.selected {
+            background: rgba(147, 51, 234, 0.2);
+            border: 2px solid #9333ea;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
@@ -198,11 +226,19 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
+                    <!-- 사용자 프로필 표시 -->
+                    <div id="userProfile" class="hidden user-profile">
+                        <span id="userAvatar" class="text-2xl">🦁</span>
+                        <span id="userName" class="font-bold">학생</span>
+                    </div>
                     <div class="bg-purple-100 px-4 py-2 rounded-full">
                         <span class="text-purple-700 font-bold">
                             🏆 <span id="totalPoints">0</span>점
                         </span>
                     </div>
+                    <button onclick="showDataMenu()" class="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition">
+                        💾 데이터
+                    </button>
                     <button onclick="window.location.href='../../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
                         🏠 메인으로
                     </button>
@@ -386,6 +422,20 @@
             <div class="glass-effect rounded-3xl p-8">
                 <h2 class="title-font text-2xl text-center mb-6 text-gray-800">🏆 나의 감정 카드 컬렉션</h2>
                 
+                <!-- 데이터 관리 버튼 -->
+                <div class="flex justify-center gap-3 mb-6">
+                    <button onclick="exportLearningData()" class="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition">
+                        📥 학습 기록 다운로드 (JSON)
+                    </button>
+                    <button onclick="generateVisualReport()" class="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">
+                        🖼️ 성과 리포트 이미지
+                    </button>
+                    <button onclick="document.getElementById('importFile').click()" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                        📤 학습 기록 불러오기
+                    </button>
+                    <input type="file" id="importFile" hidden accept=".json" onchange="importLearningData(this.files[0])">
+                </div>
+                
                 <!-- 통계 -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                     <div class="bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl p-4 text-white text-center">
@@ -436,6 +486,66 @@
                         <!-- 커스텀 카드들이 여기에 표시됨 -->
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용자 프로필 모달 -->
+    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-3xl p-8 max-w-md mx-4">
+            <h3 class="text-2xl font-bold mb-4 text-center">👋 안녕하세요!</h3>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">이름을 입력해주세요</label>
+                <input type="text" id="profileNameInput" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-400 focus:outline-none" placeholder="예: 김학생">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">학급</label>
+                <input type="text" id="profileClassInput" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-400 focus:outline-none" placeholder="예: 3학년 2반">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">아바타 선택</label>
+                <div class="grid grid-cols-6 gap-2">
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🦁')">🦁</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🐶')">🐶</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🐱')">🐱</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🐰')">🐰</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🐼')">🐼</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🦊')">🦊</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🐸')">🐸</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🐧')">🐧</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🦋')">🦋</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🌟')">🌟</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🌈')">🌈</span>
+                    <span class="avatar-selector text-3xl" onclick="selectAvatar('🎈')">🎈</span>
+                </div>
+            </div>
+            <button onclick="saveProfile()" class="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:scale-105 transition">
+                시작하기
+            </button>
+        </div>
+    </div>
+
+    <!-- 데이터 메뉴 모달 -->
+    <div id="dataMenuModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-3xl p-8 max-w-md mx-4">
+            <h3 class="text-2xl font-bold mb-6 text-center">💾 데이터 관리</h3>
+            <div class="space-y-3">
+                <button onclick="exportLearningData(); closeDataMenu();" class="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                    📥 학습 기록 다운로드 (JSON)
+                </button>
+                <button onclick="generateVisualReport(); closeDataMenu();" class="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                    🖼️ 성과 리포트 이미지 다운로드
+                </button>
+                <button onclick="document.getElementById('importFileModal').click(); closeDataMenu();" class="w-full px-4 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
+                    📤 학습 기록 불러오기
+                </button>
+                <input type="file" id="importFileModal" hidden accept=".json" onchange="importLearningData(this.files[0])">
+                <button onclick="changeProfile(); closeDataMenu();" class="w-full px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
+                    👤 프로필 변경
+                </button>
+                <button onclick="closeDataMenu()" class="w-full px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition">
+                    닫기
+                </button>
             </div>
         </div>
     </div>
@@ -501,20 +611,394 @@
         ];
 
         // 전역 변수
+        let userProfile = null;
         let collectedCards = JSON.parse(localStorage.getItem('collectedEmotionCards') || '[]');
         let customCards = JSON.parse(localStorage.getItem('customEmotionCards') || '[]');
         let totalPoints = parseInt(localStorage.getItem('emotionCardPoints') || '0');
+        let activityTimeline = JSON.parse(localStorage.getItem('emotionActivityTimeline') || '[]');
         let currentCategory = 'all';
         let selectedCustomEmoji = '❓';
         let selectedCustomColor = '#A29BFE';
+        let selectedAvatar = '🦁';
         let currentGame = null;
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
+            initializeUser();
             renderGallery();
             updateStats();
             updatePointsDisplay();
         });
+
+        // 사용자 초기화
+        function initializeUser() {
+            const savedProfile = localStorage.getItem('emotionCardUserProfile');
+            if (savedProfile) {
+                userProfile = JSON.parse(savedProfile);
+                displayUserProfile();
+            } else {
+                document.getElementById('profileModal').classList.remove('hidden');
+            }
+        }
+
+        // 프로필 표시
+        function displayUserProfile() {
+            if (userProfile) {
+                document.getElementById('userProfile').classList.remove('hidden');
+                document.getElementById('userName').textContent = userProfile.name || '학생';
+                document.getElementById('userAvatar').textContent = userProfile.avatar || '🦁';
+            }
+        }
+
+        // 아바타 선택
+        function selectAvatar(avatar) {
+            selectedAvatar = avatar;
+            document.querySelectorAll('.avatar-selector').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        // 프로필 저장
+        function saveProfile() {
+            const name = document.getElementById('profileNameInput').value.trim();
+            const className = document.getElementById('profileClassInput').value.trim();
+            
+            if (!name) {
+                alert('이름을 입력해주세요!');
+                return;
+            }
+            
+            userProfile = {
+                name: name,
+                className: className || '',
+                avatar: selectedAvatar,
+                createdAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('emotionCardUserProfile', JSON.stringify(userProfile));
+            document.getElementById('profileModal').classList.add('hidden');
+            displayUserProfile();
+            
+            // 활동 기록
+            addActivity('profile_created', { name: name });
+        }
+
+        // 프로필 변경
+        function changeProfile() {
+            const savedProfile = localStorage.getItem('emotionCardUserProfile');
+            if (savedProfile) {
+                const profile = JSON.parse(savedProfile);
+                document.getElementById('profileNameInput').value = profile.name || '';
+                document.getElementById('profileClassInput').value = profile.className || '';
+                selectedAvatar = profile.avatar || '🦁';
+            }
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        // 활동 기록 추가
+        function addActivity(type, data = {}) {
+            const activity = {
+                type: type,
+                data: data,
+                timestamp: new Date().toISOString()
+            };
+            
+            // 오늘 날짜 찾기
+            const today = new Date().toISOString().split('T')[0];
+            let todayTimeline = activityTimeline.find(t => t.date === today);
+            
+            if (!todayTimeline) {
+                todayTimeline = { date: today, activities: [] };
+                activityTimeline.push(todayTimeline);
+            }
+            
+            todayTimeline.activities.push(activity);
+            localStorage.setItem('emotionActivityTimeline', JSON.stringify(activityTimeline));
+        }
+
+        // 학습 데이터 내보내기
+        function exportLearningData() {
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                profile: userProfile || { name: '익명', avatar: '🦁' },
+                statistics: {
+                    totalPoints: totalPoints,
+                    totalCards: emotionCards.length,
+                    collectedCards: collectedCards.length,
+                    customCards: customCards.length,
+                    completionRate: Math.round((collectedCards.length / emotionCards.length) * 100),
+                    favoriteCategory: getFavoriteCategory()
+                },
+                timeline: activityTimeline,
+                collections: {
+                    collectedCards: collectedCards,
+                    customCards: customCards
+                },
+                achievements: getAchievements()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fileName = `감정카드_학습기록_${data.profile.name}_${new Date().toISOString().split('T')[0]}.json`;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showModal('📥', '다운로드 완료!', '학습 기록이 저장되었습니다.');
+        }
+
+        // 학습 데이터 가져오기
+        function importLearningData(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (data.version && data.collections) {
+                        // 데이터 복원
+                        if (data.profile) {
+                            userProfile = data.profile;
+                            localStorage.setItem('emotionCardUserProfile', JSON.stringify(userProfile));
+                            displayUserProfile();
+                        }
+                        
+                        if (data.collections.collectedCards) {
+                            collectedCards = data.collections.collectedCards;
+                            localStorage.setItem('collectedEmotionCards', JSON.stringify(collectedCards));
+                        }
+                        
+                        if (data.collections.customCards) {
+                            customCards = data.collections.customCards;
+                            localStorage.setItem('customEmotionCards', JSON.stringify(customCards));
+                        }
+                        
+                        if (data.statistics && data.statistics.totalPoints) {
+                            totalPoints = data.statistics.totalPoints;
+                            localStorage.setItem('emotionCardPoints', totalPoints);
+                        }
+                        
+                        if (data.timeline) {
+                            activityTimeline = data.timeline;
+                            localStorage.setItem('emotionActivityTimeline', JSON.stringify(activityTimeline));
+                        }
+                        
+                        renderGallery();
+                        updateStats();
+                        updatePointsDisplay();
+                        
+                        showModal('✅', '불러오기 완료!', '학습 기록을 성공적으로 불러왔습니다.');
+                    } else {
+                        alert('올바른 학습 기록 파일이 아닙니다.');
+                    }
+                } catch (error) {
+                    alert('파일을 읽을 수 없습니다.');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 시각적 리포트 생성
+        function generateVisualReport() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 1600;
+            const ctx = canvas.getContext('2d');
+            
+            // 배경 그라데이션
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 흰색 카드 배경
+            ctx.fillStyle = 'white';
+            ctx.roundRect(50, 50, 1100, 1500, 30);
+            ctx.fill();
+            
+            // 제목
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 60px Noto Sans KR';
+            ctx.textAlign = 'center';
+            ctx.fillText('🌈 나의 감정 카드 학습 리포트', 600, 150);
+            
+            // 학생 정보
+            const userName = userProfile ? userProfile.name : '익명';
+            const userAvatar = userProfile ? userProfile.avatar : '🦁';
+            const userClass = userProfile ? userProfile.className : '';
+            
+            ctx.font = '40px Noto Sans KR';
+            ctx.fillText(`${userAvatar} ${userName}`, 600, 230);
+            if (userClass) {
+                ctx.font = '30px Noto Sans KR';
+                ctx.fillStyle = '#666';
+                ctx.fillText(userClass, 600, 280);
+            }
+            
+            // 통계 카드들
+            const stats = [
+                { label: '수집한 카드', value: collectedCards.length, icon: '📚', color: '#9333ea' },
+                { label: '획득 포인트', value: totalPoints, icon: '🏆', color: '#3b82f6' },
+                { label: '만든 카드', value: customCards.length, icon: '✨', color: '#f59e0b' },
+                { label: '완성도', value: Math.round((collectedCards.length / emotionCards.length) * 100) + '%', icon: '🎯', color: '#10b981' }
+            ];
+            
+            let x = 150;
+            let y = 350;
+            stats.forEach((stat, index) => {
+                // 카드 배경
+                ctx.fillStyle = stat.color;
+                ctx.roundRect(x, y, 220, 150, 20);
+                ctx.fill();
+                
+                // 아이콘과 텍스트
+                ctx.fillStyle = 'white';
+                ctx.font = '40px Noto Sans KR';
+                ctx.textAlign = 'center';
+                ctx.fillText(stat.icon, x + 110, y + 50);
+                
+                ctx.font = 'bold 36px Noto Sans KR';
+                ctx.fillText(stat.value, x + 110, y + 95);
+                
+                ctx.font = '20px Noto Sans KR';
+                ctx.fillText(stat.label, x + 110, y + 125);
+                
+                x += 250;
+                if (index === 1) {
+                    x = 150;
+                    y += 180;
+                }
+            });
+            
+            // 수집한 카드 갤러리
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 36px Noto Sans KR';
+            ctx.textAlign = 'left';
+            ctx.fillText('📂 수집한 감정 카드', 100, 750);
+            
+            // 카드 미니 갤러리
+            x = 100;
+            y = 800;
+            const displayCards = collectedCards.slice(0, 20);
+            displayCards.forEach((cardId, index) => {
+                const card = emotionCards.find(c => c.id === cardId);
+                if (card) {
+                    // 카드 배경
+                    ctx.fillStyle = card.color;
+                    ctx.roundRect(x, y, 90, 90, 15);
+                    ctx.fill();
+                    
+                    // 이모지
+                    ctx.font = '36px Noto Sans KR';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(card.emoji, x + 45, y + 55);
+                    
+                    x += 100;
+                    if ((index + 1) % 10 === 0) {
+                        x = 100;
+                        y += 100;
+                    }
+                }
+            });
+            
+            // 생성 날짜
+            ctx.fillStyle = '#666';
+            ctx.font = '20px Noto Sans KR';
+            ctx.textAlign = 'center';
+            ctx.fillText(`생성일: ${new Date().toLocaleDateString('ko-KR')}`, 600, 1450);
+            
+            // 이미지로 다운로드
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const fileName = `감정카드_리포트_${userName}_${new Date().toISOString().split('T')[0]}.png`;
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                showModal('🖼️', '리포트 생성 완료!', '이미지가 다운로드되었습니다.');
+            });
+        }
+
+        // Canvas roundRect 폴리필
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.lineTo(x + width - radius, y);
+                this.quadraticCurveTo(x + width, y, x + width, y + radius);
+                this.lineTo(x + width, y + height - radius);
+                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                this.lineTo(x + radius, y + height);
+                this.quadraticCurveTo(x, y + height, x, y + height - radius);
+                this.lineTo(x, y + radius);
+                this.quadraticCurveTo(x, y, x + radius, y);
+                this.closePath();
+            };
+        }
+
+        // 즐겨찾는 카테고리 찾기
+        function getFavoriteCategory() {
+            const categoryCount = {};
+            collectedCards.forEach(cardId => {
+                const card = emotionCards.find(c => c.id === cardId);
+                if (card) {
+                    categoryCount[card.category] = (categoryCount[card.category] || 0) + 1;
+                }
+            });
+            
+            let maxCategory = 'happy';
+            let maxCount = 0;
+            for (const [category, count] of Object.entries(categoryCount)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    maxCategory = category;
+                }
+            }
+            return maxCategory;
+        }
+
+        // 업적 계산
+        function getAchievements() {
+            const achievements = [];
+            
+            if (collectedCards.length >= 1) {
+                achievements.push({ id: 'first_card', name: '첫 카드 수집', icon: '🎯' });
+            }
+            if (collectedCards.length >= 10) {
+                achievements.push({ id: 'collector_10', name: '10개 카드 수집', icon: '📚' });
+            }
+            if (collectedCards.length >= 20) {
+                achievements.push({ id: 'collector_20', name: '20개 카드 수집', icon: '🏆' });
+            }
+            if (collectedCards.length === emotionCards.length) {
+                achievements.push({ id: 'complete', name: '모든 카드 수집', icon: '👑' });
+            }
+            if (customCards.length >= 1) {
+                achievements.push({ id: 'creator', name: '카드 제작자', icon: '✨' });
+            }
+            if (totalPoints >= 100) {
+                achievements.push({ id: 'points_100', name: '100점 달성', icon: '💯' });
+            }
+            
+            return achievements;
+        }
+
+        // 데이터 메뉴 표시
+        function showDataMenu() {
+            document.getElementById('dataMenuModal').classList.remove('hidden');
+        }
+
+        // 데이터 메뉴 닫기
+        function closeDataMenu() {
+            document.getElementById('dataMenuModal').classList.add('hidden');
+        }
 
         // 포인트 표시 업데이트
         function updatePointsDisplay() {
@@ -594,9 +1078,13 @@
                 localStorage.setItem('emotionCardPoints', totalPoints);
                 updatePointsDisplay();
                 
+                // 활동 기록
+                const card = emotionCards.find(c => c.id === cardId);
+                addActivity('card_collected', { cardId: cardId, cardName: card.name });
+                
                 // 애니메이션 효과
-                const card = event.target.closest('.emotion-card');
-                card.classList.add('card-collected');
+                const cardElement = event.target.closest('.emotion-card');
+                cardElement.classList.add('card-collected');
                 
                 // 성공 메시지
                 showModal('🎉', '카드 수집 완료!', '새로운 감정 카드를 수집했어요! +10점');
@@ -634,6 +1122,9 @@
             } else if (gameType === 'memory') {
                 startMemoryGame();
             }
+            
+            // 활동 기록
+            addActivity('game_started', { gameType: gameType });
         }
 
         // 매칭 게임
@@ -705,6 +1196,7 @@
                             totalPoints += 30;
                             localStorage.setItem('emotionCardPoints', totalPoints);
                             updatePointsDisplay();
+                            addActivity('game_completed', { gameType: 'match', score: 30 });
                             showModal('🏆', '게임 완료!', '모든 카드를 매칭했어요! +30점');
                         }
                         
@@ -781,6 +1273,7 @@
                     totalPoints += score;
                     localStorage.setItem('emotionCardPoints', totalPoints);
                     updatePointsDisplay();
+                    addActivity('game_completed', { gameType: 'quiz', score: score });
                     showModal('🎊', '퀴즈 완료!', `총 ${score}점을 획득했어요!`);
                 }
             };
@@ -831,6 +1324,7 @@
                                 totalPoints += 50;
                                 localStorage.setItem('emotionCardPoints', totalPoints);
                                 updatePointsDisplay();
+                                addActivity('game_completed', { gameType: 'memory', score: 50 });
                                 showModal('🏆', '게임 완료!', '모든 쌍을 찾았어요! +50점');
                             }
                             
@@ -908,6 +1402,9 @@
             totalPoints += 20;
             localStorage.setItem('emotionCardPoints', totalPoints);
             updatePointsDisplay();
+            
+            // 활동 기록
+            addActivity('card_created', { cardName: name });
             
             // 성공 메시지
             showModal('✨', '카드 생성 완료!', `"${name}" 카드를 만들었어요! +20점`);
