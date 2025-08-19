@@ -96,29 +96,121 @@
             50% { transform: scale(1.05); }
         }
         
+        /* 개선된 게임 카드 스타일 */
         .game-card {
             transition: all 0.3s ease;
             cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .game-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.05);
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            z-index: 10;
         }
         
         .game-card.selected {
             border: 3px solid #10b981;
+            background: #10b981 !important;
+            color: white;
             transform: scale(0.95);
         }
         
         .game-card.matched {
             background: #10b981 !important;
+            color: white;
             animation: matchPulse 0.5s ease;
+        }
+        
+        .game-card.incorrect {
+            animation: shake 0.5s ease;
+            background: #ef4444 !important;
+            color: white;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
         
         @keyframes matchPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
+        }
+        
+        /* 상황 카드 스타일 */
+        .situation-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .emotion-choice-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .emotion-choice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-color: #9333ea;
+        }
+        
+        .emotion-choice-card.selected {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            transform: scale(0.95);
+        }
+        
+        /* 빙고 스타일 */
+        .bingo-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px;
+        }
+        
+        .bingo-cell:hover:not(.checked) {
+            background: #f3f4f6;
+            transform: scale(1.05);
+        }
+        
+        .bingo-cell.checked {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            animation: checkAnimation 0.5s ease;
+        }
+        
+        .bingo-cell.center {
+            background: linear-gradient(135deg, #9333ea 0%, #c084fc 100%);
+            color: white;
+            cursor: default;
+        }
+        
+        @keyframes checkAnimation {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
         
         .star-animation {
@@ -309,18 +401,23 @@
                 <h2 class="title-font text-2xl text-center mb-6 text-gray-800">🎮 감정 맞추기 게임</h2>
                 
                 <!-- 게임 선택 -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                    <div class="bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl p-6 text-white text-center cursor-pointer hover:scale-105 transition" onclick="startGame('match')">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl p-6 text-white text-center cursor-pointer hover:scale-105 transition" onclick="startGame('situation')">
+                        <div class="text-4xl mb-2">📖</div>
+                        <h3 class="font-bold text-lg">상황 감정 찾기</h3>
+                        <p class="text-sm mt-2">상황을 보고 감정 맞추기</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-400 to-cyan-400 rounded-2xl p-6 text-white text-center cursor-pointer hover:scale-105 transition" onclick="startGame('detective')">
+                        <div class="text-4xl mb-2">🔍</div>
+                        <h3 class="font-bold text-lg">감정 탐정</h3>
+                        <p class="text-sm mt-2">단서를 보고 감정 추리</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl p-6 text-white text-center cursor-pointer hover:scale-105 transition" onclick="startGame('bingo')">
                         <div class="text-4xl mb-2">🎯</div>
-                        <h3 class="font-bold text-lg">감정 매칭</h3>
-                        <p class="text-sm mt-2">이모지와 감정 단어 연결하기</p>
+                        <h3 class="font-bold text-lg">감정 빙고</h3>
+                        <p class="text-sm mt-2">오늘 느낀 감정으로 빙고</p>
                     </div>
-                    <div class="bg-gradient-to-r from-blue-400 to-cyan-400 rounded-2xl p-6 text-white text-center cursor-pointer hover:scale-105 transition" onclick="startGame('quiz')">
-                        <div class="text-4xl mb-2">❓</div>
-                        <h3 class="font-bold text-lg">감정 퀴즈</h3>
-                        <p class="text-sm mt-2">상황 보고 감정 맞추기</p>
-                    </div>
-                    <div class="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl p-6 text-white text-center cursor-pointer hover:scale-105 transition" onclick="startGame('memory')">
+                    <div class="bg-gradient-to-r from-green-400 to-emerald-400 rounded-2xl p-6 text-white text-center cursor-pointer hover:scale-105 transition" onclick="startGame('memory')">
                         <div class="text-4xl mb-2">🧩</div>
                         <h3 class="font-bold text-lg">감정 메모리</h3>
                         <p class="text-sm mt-2">같은 감정 카드 찾기</p>
@@ -610,6 +707,58 @@
             { id: 30, name: '포근함', emoji: '🤗', category: 'love', color: '#FD79A8', desc: '따뜻하고 편안한 느낌', example: '엄마 품에 안길 때' }
         ];
 
+        // 상황 시나리오 데이터
+        const situationScenarios = [
+            {
+                id: 1,
+                category: 'school',
+                situation: '오늘 체육 시간에 달리기 시합에서 1등을 했어요!',
+                emotions: ['기쁨', '자랑스러움', '신남', '만족'],
+                correctAnswers: ['기쁨', '자랑스러움', '신남'],
+                feedback: '1등을 하면 정말 기쁘고 자랑스럽죠! 여러 감정을 동시에 느낄 수 있어요.'
+            },
+            {
+                id: 2,
+                category: 'school',
+                situation: '수업 시간에 선생님께서 내 발표를 칭찬해주셨어요.',
+                emotions: ['자랑스러움', '기쁨', '부끄러움', '감사'],
+                correctAnswers: ['자랑스러움', '기쁨', '부끄러움'],
+                feedback: '칭찬을 받으면 기쁘면서도 부끄러울 수 있어요.'
+            },
+            {
+                id: 3,
+                category: 'home',
+                situation: '동생이 내 장난감을 망가뜨렸어요.',
+                emotions: ['화남', '슬픔', '짜증', '기쁨'],
+                correctAnswers: ['화남', '슬픔', '짜증'],
+                feedback: '소중한 물건이 망가지면 화가 나고 속상할 수 있어요.'
+            },
+            {
+                id: 4,
+                category: 'home',
+                situation: '엄마가 내가 좋아하는 음식을 만들어주셨어요.',
+                emotions: ['기쁨', '감사', '사랑', '화남'],
+                correctAnswers: ['기쁨', '감사', '사랑'],
+                feedback: '좋아하는 음식을 먹으면 정말 행복하죠!'
+            },
+            {
+                id: 5,
+                category: 'friend',
+                situation: '친한 친구가 다른 학교로 전학을 가게 되었어요.',
+                emotions: ['슬픔', '그리움', '외로움', '기쁨'],
+                correctAnswers: ['슬픔', '그리움', '외로움'],
+                feedback: '친구와 헤어지는 것은 정말 슬픈 일이에요.'
+            },
+            {
+                id: 6,
+                category: 'friend',
+                situation: '친구가 내 생일에 깜짝 선물을 준비했어요.',
+                emotions: ['놀람', '기쁨', '감사', '화남'],
+                correctAnswers: ['놀람', '기쁨', '감사'],
+                feedback: '깜짝 선물은 놀랍고 기쁜 일이에요!'
+            }
+        ];
+
         // 전역 변수
         let userProfile = null;
         let collectedCards = JSON.parse(localStorage.getItem('collectedEmotionCards') || '[]');
@@ -621,6 +770,7 @@
         let selectedCustomColor = '#A29BFE';
         let selectedAvatar = '🦁';
         let currentGame = null;
+        let bingoBoard = null;
 
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
@@ -1115,10 +1265,12 @@
             const gameArea = document.getElementById('gameArea');
             gameArea.classList.remove('hidden');
             
-            if (gameType === 'match') {
-                startMatchGame();
-            } else if (gameType === 'quiz') {
-                startQuizGame();
+            if (gameType === 'situation') {
+                startSituationGame();
+            } else if (gameType === 'detective') {
+                startDetectiveGame();
+            } else if (gameType === 'bingo') {
+                startBingoGame();
             } else if (gameType === 'memory') {
                 startMemoryGame();
             }
@@ -1127,158 +1279,322 @@
             addActivity('game_started', { gameType: gameType });
         }
 
-        // 매칭 게임
-        function startMatchGame() {
+        // 상황-감정 매칭 게임
+        function startSituationGame() {
             const gameArea = document.getElementById('gameArea');
-            const shuffledCards = [...emotionCards].sort(() => Math.random() - 0.5).slice(0, 6);
-            
-            gameArea.innerHTML = `
-                <h3 class="text-xl font-bold mb-4 text-gray-800">이모지와 감정 단어를 연결하세요!</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <h4 class="font-bold mb-2">이모지</h4>
-                        <div class="space-y-2" id="emojiList">
-                            ${shuffledCards.map(card => `
-                                <div class="game-card bg-white p-4 rounded-lg text-center text-3xl" data-id="${card.id}">
-                                    ${card.emoji}
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    <div>
-                        <h4 class="font-bold mb-2">감정 단어</h4>
-                        <div class="space-y-2" id="wordList">
-                            ${shuffledCards.sort(() => Math.random() - 0.5).map(card => `
-                                <div class="game-card bg-white p-4 rounded-lg text-center font-bold" data-id="${card.id}">
-                                    ${card.name}
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4 text-center">
-                    <span class="text-gray-600">매칭: <span id="matchCount">0</span>/6</span>
-                </div>
-            `;
-            
-            let selectedEmoji = null;
-            let selectedWord = null;
-            let matches = 0;
-            
-            // 이벤트 리스너 추가
-            document.querySelectorAll('#emojiList .game-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    if (selectedEmoji) selectedEmoji.classList.remove('selected');
-                    selectedEmoji = this;
-                    this.classList.add('selected');
-                    checkMatch();
-                });
-            });
-            
-            document.querySelectorAll('#wordList .game-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    if (selectedWord) selectedWord.classList.remove('selected');
-                    selectedWord = this;
-                    this.classList.add('selected');
-                    checkMatch();
-                });
-            });
-            
-            function checkMatch() {
-                if (selectedEmoji && selectedWord) {
-                    if (selectedEmoji.dataset.id === selectedWord.dataset.id) {
-                        selectedEmoji.classList.add('matched');
-                        selectedWord.classList.add('matched');
-                        matches++;
-                        document.getElementById('matchCount').textContent = matches;
-                        
-                        if (matches === 6) {
-                            totalPoints += 30;
-                            localStorage.setItem('emotionCardPoints', totalPoints);
-                            updatePointsDisplay();
-                            addActivity('game_completed', { gameType: 'match', score: 30 });
-                            showModal('🏆', '게임 완료!', '모든 카드를 매칭했어요! +30점');
-                        }
-                        
-                        selectedEmoji = null;
-                        selectedWord = null;
-                    } else {
-                        setTimeout(() => {
-                            selectedEmoji.classList.remove('selected');
-                            selectedWord.classList.remove('selected');
-                            selectedEmoji = null;
-                            selectedWord = null;
-                        }, 1000);
-                    }
-                }
-            }
-        }
-
-        // 퀴즈 게임
-        function startQuizGame() {
-            const gameArea = document.getElementById('gameArea');
-            const questions = [
-                { 
-                    question: '친구가 생일 선물을 줬을 때 느끼는 감정은?',
-                    options: ['기쁨', '슬픔', '화남', '두려움'],
-                    answer: '기쁨'
-                },
-                {
-                    question: '시험을 망쳤을 때 느끼는 감정은?',
-                    options: ['신남', '실망', '감사', '설렘'],
-                    answer: '실망'
-                },
-                {
-                    question: '어두운 방에 혼자 있을 때 느끼는 감정은?',
-                    options: ['만족', '자랑스러움', '두려움', '애정'],
-                    answer: '두려움'
-                }
-            ];
-            
-            let currentQuestion = 0;
+            let currentScenario = 0;
             let score = 0;
+            let selectedEmotions = [];
             
-            function showQuestion() {
-                const q = questions[currentQuestion];
+            function showScenario() {
+                const scenario = situationScenarios[currentScenario];
+                selectedEmotions = [];
+                
                 gameArea.innerHTML = `
-                    <h3 class="text-xl font-bold mb-4 text-gray-800">감정 퀴즈 (${currentQuestion + 1}/${questions.length})</h3>
-                    <div class="bg-white rounded-2xl p-6">
-                        <p class="text-lg mb-4">${q.question}</p>
-                        <div class="grid grid-cols-2 gap-3">
-                            ${q.options.map(option => `
-                                <button onclick="checkAnswer('${option}')" class="px-4 py-3 bg-purple-100 hover:bg-purple-200 rounded-lg font-medium transition">
-                                    ${option}
-                                </button>
-                            `).join('')}
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">📖 상황을 보고 감정을 선택해요! (${currentScenario + 1}/${situationScenarios.length})</h3>
+                    
+                    <!-- 상황 카드 -->
+                    <div class="situation-card mb-6">
+                        <div class="text-6xl mb-4">
+                            ${scenario.category === 'school' ? '🏫' : scenario.category === 'home' ? '🏠' : '👫'}
+                        </div>
+                        <p class="text-xl font-medium">${scenario.situation}</p>
+                    </div>
+                    
+                    <!-- 감정 선택 영역 -->
+                    <div class="mb-4">
+                        <p class="text-center text-gray-600 mb-3">여러 개의 감정을 선택할 수 있어요!</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            ${scenario.emotions.map(emotion => {
+                                const card = emotionCards.find(c => c.name === emotion);
+                                return `
+                                    <div class="emotion-choice-card" onclick="selectEmotion('${emotion}', this)">
+                                        <div class="text-5xl text-center mb-2">${card ? card.emoji : '❓'}</div>
+                                        <div class="text-lg font-bold text-center">${emotion}</div>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
+                    
+                    <!-- 제출 버튼 -->
+                    <div class="text-center">
+                        <button onclick="checkSituationAnswer()" class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:scale-105 transition">
+                            확인하기
+                        </button>
+                        <button onclick="showHint()" class="ml-3 px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white font-bold rounded-full hover:scale-105 transition">
+                            💡 힌트
+                        </button>
+                    </div>
+                    
                     <div class="mt-4 text-center">
                         <span class="text-gray-600">점수: ${score}점</span>
                     </div>
                 `;
             }
             
-            window.checkAnswer = function(answer) {
-                if (answer === questions[currentQuestion].answer) {
-                    score += 10;
-                    showModal('✅', '정답!', '잘했어요! +10점');
+            window.selectEmotion = function(emotion, element) {
+                element.classList.toggle('selected');
+                const index = selectedEmotions.indexOf(emotion);
+                if (index > -1) {
+                    selectedEmotions.splice(index, 1);
                 } else {
-                    showModal('❌', '틀렸어요', `정답은 "${questions[currentQuestion].answer}"입니다`);
+                    selectedEmotions.push(emotion);
+                }
+            };
+            
+            window.showHint = function() {
+                const scenario = situationScenarios[currentScenario];
+                showModal('💡', '힌트', `이런 상황에서는 보통 ${scenario.correctAnswers[0]}을(를) 느껴요!`);
+            };
+            
+            window.checkSituationAnswer = function() {
+                const scenario = situationScenarios[currentScenario];
+                let correct = 0;
+                
+                selectedEmotions.forEach(emotion => {
+                    if (scenario.correctAnswers.includes(emotion)) {
+                        correct++;
+                    }
+                });
+                
+                const points = correct * 10;
+                score += points;
+                
+                if (correct > 0) {
+                    showModal('✅', '잘했어요!', `${scenario.feedback} +${points}점`);
+                } else {
+                    showModal('💭', '다시 생각해봐요', scenario.feedback);
                 }
                 
-                currentQuestion++;
-                if (currentQuestion < questions.length) {
-                    setTimeout(showQuestion, 2000);
+                currentScenario++;
+                if (currentScenario < situationScenarios.length) {
+                    setTimeout(showScenario, 2500);
                 } else {
                     totalPoints += score;
                     localStorage.setItem('emotionCardPoints', totalPoints);
                     updatePointsDisplay();
-                    addActivity('game_completed', { gameType: 'quiz', score: score });
-                    showModal('🎊', '퀴즈 완료!', `총 ${score}점을 획득했어요!`);
+                    addActivity('game_completed', { gameType: 'situation', score: score });
+                    showModal('🎊', '게임 완료!', `총 ${score}점을 획득했어요!`);
+                    setTimeout(() => {
+                        gameArea.classList.add('hidden');
+                    }, 3000);
                 }
             };
             
-            showQuestion();
+            showScenario();
+        }
+
+        // 감정 탐정 게임
+        function startDetectiveGame() {
+            const gameArea = document.getElementById('gameArea');
+            
+            const detectiveCases = [
+                {
+                    clues: [
+                        '얼굴이 빨개졌어요',
+                        '고개를 숙였어요',
+                        '목소리가 작아졌어요'
+                    ],
+                    emotions: ['부끄러움', '기쁨', '화남', '슬픔'],
+                    answer: '부끄러움',
+                    explanation: '얼굴이 빨개지고 고개를 숙이는 것은 부끄러울 때의 모습이에요.'
+                },
+                {
+                    clues: [
+                        '눈물이 나요',
+                        '입술이 떨려요',
+                        '혼자 있고 싶어요'
+                    ],
+                    emotions: ['슬픔', '기쁨', '놀람', '신남'],
+                    answer: '슬픔',
+                    explanation: '눈물이 나고 혼자 있고 싶을 때는 슬픈 감정을 느끼고 있어요.'
+                },
+                {
+                    clues: [
+                        '주먹을 꽉 쥐었어요',
+                        '얼굴이 붉어졌어요',
+                        '큰 소리가 나요'
+                    ],
+                    emotions: ['화남', '기쁨', '두려움', '감사'],
+                    answer: '화남',
+                    explanation: '주먹을 쥐고 큰 소리를 내는 것은 화가 났을 때의 표현이에요.'
+                }
+            ];
+            
+            let currentCase = 0;
+            let score = 0;
+            
+            function showCase() {
+                const detectiveCase = detectiveCases[currentCase];
+                
+                gameArea.innerHTML = `
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">🔍 감정 탐정: 단서를 보고 감정을 추리해요!</h3>
+                    
+                    <div class="bg-white rounded-2xl p-6 mb-6">
+                        <h4 class="font-bold text-lg mb-4">📋 단서들:</h4>
+                        <ul class="space-y-2">
+                            ${detectiveCase.clues.map(clue => `
+                                <li class="flex items-center">
+                                    <span class="text-2xl mr-3">🔍</span>
+                                    <span class="text-lg">${clue}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        ${detectiveCase.emotions.map(emotion => {
+                            const card = emotionCards.find(c => c.name === emotion);
+                            return `
+                                <button onclick="checkDetectiveAnswer('${emotion}')" 
+                                    class="game-card bg-white p-6 rounded-xl hover:bg-purple-100">
+                                    <div class="text-5xl mb-2">${card ? card.emoji : '❓'}</div>
+                                    <div class="font-bold text-lg">${emotion}</div>
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="text-center">
+                        <span class="text-gray-600">사건 ${currentCase + 1}/${detectiveCases.length} | 점수: ${score}점</span>
+                    </div>
+                `;
+            }
+            
+            window.checkDetectiveAnswer = function(emotion) {
+                const detectiveCase = detectiveCases[currentCase];
+                
+                if (emotion === detectiveCase.answer) {
+                    score += 20;
+                    showModal('🎯', '정답!', `${detectiveCase.explanation} +20점`);
+                } else {
+                    showModal('🤔', '다시 생각해봐요', `힌트: ${detectiveCase.clues[0]}`);
+                }
+                
+                currentCase++;
+                if (currentCase < detectiveCases.length) {
+                    setTimeout(showCase, 2500);
+                } else {
+                    totalPoints += score;
+                    localStorage.setItem('emotionCardPoints', totalPoints);
+                    updatePointsDisplay();
+                    addActivity('game_completed', { gameType: 'detective', score: score });
+                    showModal('🏆', '탐정 임무 완료!', `총 ${score}점을 획득했어요!`);
+                    setTimeout(() => {
+                        gameArea.classList.add('hidden');
+                    }, 3000);
+                }
+            };
+            
+            showCase();
+        }
+
+        // 감정 빙고 게임
+        function startBingoGame() {
+            const gameArea = document.getElementById('gameArea');
+            
+            // 빙고판 생성
+            const bingoEmotions = [
+                '기쁨', '슬픔', '화남', '놀람', 
+                '감사', '무료', '설렘', '걱정',
+                '자랑스러움', '부끄러움', '신남', '두려움'
+            ];
+            
+            // 3x3 빙고판 생성 (중앙은 FREE)
+            bingoBoard = [
+                [...bingoEmotions.slice(0, 4)],
+                [bingoEmotions[4], 'FREE', bingoEmotions[5]],
+                [...bingoEmotions.slice(6, 9)]
+            ];
+            
+            let checkedCells = [[false, false, false], [false, true, false], [false, false, false]];
+            
+            gameArea.innerHTML = `
+                <h3 class="text-xl font-bold mb-4 text-gray-800">🎯 오늘 느낀 감정으로 빙고를 완성해요!</h3>
+                
+                <div class="max-w-md mx-auto mb-6">
+                    <div class="grid grid-cols-3 gap-3">
+                        ${bingoBoard.map((row, i) => 
+                            row.map((emotion, j) => {
+                                if (emotion === 'FREE') {
+                                    return `
+                                        <div class="bingo-cell center">
+                                            <span class="text-2xl">🌟</span>
+                                            <span class="font-bold">FREE</span>
+                                        </div>
+                                    `;
+                                }
+                                const card = emotionCards.find(c => c.name === emotion);
+                                return `
+                                    <div class="bingo-cell" onclick="checkBingoCell(${i}, ${j}, '${emotion}')" id="bingo-${i}-${j}">
+                                        <span class="text-3xl">${card ? card.emoji : '❓'}</span>
+                                        <span class="text-sm font-bold">${emotion}</span>
+                                    </div>
+                                `;
+                            }).join('')
+                        ).join('')}
+                    </div>
+                </div>
+                
+                <div class="text-center mb-4">
+                    <p class="text-gray-600">오늘 실제로 느낀 감정만 체크해요!</p>
+                </div>
+                
+                <div class="text-center">
+                    <button onclick="checkBingo()" class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:scale-105 transition">
+                        빙고 확인하기
+                    </button>
+                </div>
+            `;
+            
+            window.checkBingoCell = function(i, j, emotion) {
+                const cell = document.getElementById(`bingo-${i}-${j}`);
+                cell.classList.toggle('checked');
+                checkedCells[i][j] = !checkedCells[i][j];
+                
+                if (checkedCells[i][j]) {
+                    showModal('😊', emotion, `오늘 ${emotion}을(를) 느꼈군요!`);
+                }
+            };
+            
+            window.checkBingo = function() {
+                let bingoCount = 0;
+                
+                // 가로 체크
+                for (let i = 0; i < 3; i++) {
+                    if (checkedCells[i].every(cell => cell === true)) {
+                        bingoCount++;
+                    }
+                }
+                
+                // 세로 체크
+                for (let j = 0; j < 3; j++) {
+                    if (checkedCells.every(row => row[j] === true)) {
+                        bingoCount++;
+                    }
+                }
+                
+                // 대각선 체크
+                if (checkedCells[0][0] && checkedCells[1][1] && checkedCells[2][2]) {
+                    bingoCount++;
+                }
+                if (checkedCells[0][2] && checkedCells[1][1] && checkedCells[2][0]) {
+                    bingoCount++;
+                }
+                
+                const points = bingoCount * 30;
+                if (bingoCount > 0) {
+                    totalPoints += points;
+                    localStorage.setItem('emotionCardPoints', totalPoints);
+                    updatePointsDisplay();
+                    addActivity('game_completed', { gameType: 'bingo', score: points });
+                    showModal('🎉', `${bingoCount}줄 빙고!`, `축하해요! ${points}점을 획득했어요!`);
+                    createConfetti();
+                } else {
+                    showModal('💪', '계속 도전!', '더 많은 감정을 체크해서 빙고를 만들어봐요!');
+                }
+            };
         }
 
         // 메모리 게임
@@ -1288,15 +1604,15 @@
             const gameCards = [...memoryCards, ...memoryCards].sort(() => Math.random() - 0.5);
             
             gameArea.innerHTML = `
-                <h3 class="text-xl font-bold mb-4 text-gray-800">같은 감정 카드를 찾아주세요!</h3>
+                <h3 class="text-xl font-bold mb-4 text-gray-800">🧩 같은 감정 카드를 찾아주세요!</h3>
                 <div class="grid grid-cols-4 gap-3">
                     ${gameCards.map((card, index) => `
-                        <div class="memory-card bg-purple-500 rounded-lg p-8 text-center cursor-pointer" data-id="${card.id}" data-index="${index}" onclick="flipMemoryCard(this)">
+                        <div class="memory-card bg-purple-500 rounded-lg p-6 text-center cursor-pointer" data-id="${card.id}" data-index="${index}" onclick="flipMemoryCard(this)">
                             <div class="card-content hidden">
-                                <div class="text-3xl">${card.emoji}</div>
+                                <div class="text-5xl">${card.emoji}</div>
                                 <div class="text-sm font-bold text-white mt-1">${card.name}</div>
                             </div>
-                            <div class="card-back text-3xl text-white">?</div>
+                            <div class="card-back text-4xl text-white">?</div>
                         </div>
                     `).join('')}
                 </div>
