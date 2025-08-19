@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎤 가족 ABC 인터뷰 - 가족의 생각과 감정 이해하기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .title-font {
+            font-family: 'Jua', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .interview-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .interview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .interview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .family-member {
+            background: white;
+            border: 3px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .family-member.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%);
+        }
+        
+        .emotion-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 2px;
+        }
+        
+        .emotion-positive {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .emotion-negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .emotion-neutral {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .abc-component {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .component-a {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #fbbf24;
+        }
+        
+        .component-b {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #60a5fa;
+        }
+        
+        .component-c {
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+            border: 2px solid #f472b6;
+        }
+        
+        .question-bubble {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 15px;
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .question-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 30px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid white;
+        }
+        
+        .interview-progress {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .tip-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            .interview-card {
+                page-break-inside: avoid;
+            }
+        }
+        
+        .recorder-control {
+            background: white;
+            border: 3px solid #ef4444;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .recorder-control.recording {
+            animation: recording-pulse 1.5s infinite;
+        }
+        
+        @keyframes recording-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                border-color: #ef4444;
+            }
+            50% { 
+                transform: scale(1.1);
+                border-color: #dc2626;
+            }
+        }
+        
+        .share-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .share-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <!-- 헤더 -->
+    <header class="glass-effect shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-4xl float-animation">🎤</span>
+                    <div>
+                        <h1 class="title-font text-2xl md:text-3xl text-gray-800">가족 ABC 인터뷰</h1>
+                        <p class="text-sm text-gray-600">우리 가족의 생각과 감정 이해하기</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="showGuide()" class="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">
+                        📖 가이드
+                    </button>
+                    <button onclick="window.location.href='../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                        🏠 메인으로
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- ABC 모델 소개 -->
+        <div class="glass-effect rounded-3xl p-6 mb-8">
+            <h2 class="title-font text-2xl text-center mb-6 text-gray-800">🧠 ABC 모델이란?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="abc-component component-a">
+                    <h3 class="font-bold text-lg mb-2">A - Activating Event</h3>
+                    <p class="text-sm">🎬 상황</p>
+                    <p class="text-xs mt-2">어떤 일이 일어났나요?</p>
+                </div>
+                <div class="abc-component component-b">
+                    <h3 class="font-bold text-lg mb-2">B - Belief</h3>
+                    <p class="text-sm">💭 생각</p>
+                    <p class="text-xs mt-2">그때 무슨 생각을 했나요?</p>
+                </div>
+                <div class="abc-component component-c">
+                    <h3 class="font-bold text-lg mb-2">C - Consequence</h3>
+                    <p class="text-sm">❤️ 감정</p>
+                    <p class="text-xs mt-2">어떤 감정을 느꼈나요?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 인터뷰 설정 -->
+        <div class="interview-card p-6 mb-8">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">👨‍👩‍👧‍👦 누구를 인터뷰할까요?</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button onclick="selectMember('아빠')" class="family-member-btn p-4 bg-blue-100 rounded-xl hover:bg-blue-200 transition">
+                    <span class="text-3xl">👨</span>
+                    <p class="mt-2 font-bold">아빠</p>
+                </button>
+                <button onclick="selectMember('엄마')" class="family-member-btn p-4 bg-pink-100 rounded-xl hover:bg-pink-200 transition">
+                    <span class="text-3xl">👩</span>
+                    <p class="mt-2 font-bold">엄마</p>
+                </button>
+                <button onclick="selectMember('형제/자매')" class="family-member-btn p-4 bg-green-100 rounded-xl hover:bg-green-200 transition">
+                    <span class="text-3xl">👦</span>
+                    <p class="mt-2 font-bold">형제/자매</p>
+                </button>
+                <button onclick="selectMember('조부모님')" class="family-member-btn p-4 bg-yellow-100 rounded-xl hover:bg-yellow-200 transition">
+                    <span class="text-3xl">👴</span>
+                    <p class="mt-2 font-bold">조부모님</p>
+                </button>
+            </div>
+            <div class="mt-4">
+                <input type="text" id="memberName" placeholder="인터뷰할 가족의 이름을 입력하세요" 
+                       class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none">
+            </div>
+        </div>
+
+        <!-- 인터뷰 질문 템플릿 -->
+        <div class="interview-card p-6 mb-8">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">📋 인터뷰 시작하기</h3>
+            
+            <!-- 진행 상황 -->
+            <div class="interview-progress">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <p class="text-sm text-gray-600 text-center mb-6">
+                <span id="currentStep">0</span> / 3 단계 완료
+            </p>
+
+            <!-- 상황 선택 -->
+            <div id="situationSelect" class="mb-6">
+                <h4 class="font-bold mb-3">상황을 선택하세요:</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button onclick="selectSituation('happy')" class="p-4 bg-yellow-50 rounded-xl hover:bg-yellow-100 transition text-left">
+                        <span class="text-2xl">😊</span>
+                        <span class="ml-2">최근에 가장 행복했던 순간</span>
+                    </button>
+                    <button onclick="selectSituation('angry')" class="p-4 bg-red-50 rounded-xl hover:bg-red-100 transition text-left">
+                        <span class="text-2xl">😠</span>
+                        <span class="ml-2">최근에 화가 났던 순간</span>
+                    </button>
+                    <button onclick="selectSituation('sad')" class="p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition text-left">
+                        <span class="text-2xl">😢</span>
+                        <span class="ml-2">최근에 슬펐던 순간</span>
+                    </button>
+                    <button onclick="selectSituation('proud')" class="p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition text-left">
+                        <span class="text-2xl">🏆</span>
+                        <span class="ml-2">최근에 자랑스러웠던 순간</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 인터뷰 폼 -->
+            <div id="interviewForm" class="hidden">
+                <!-- A: 상황 -->
+                <div class="family-member" id="stepA">
+                    <h4 class="font-bold text-lg mb-3">🎬 A - 상황 (Activating Event)</h4>
+                    <div class="question-bubble">
+                        <p class="font-bold text-purple-600" id="questionA">어떤 일이 있었나요? 자세히 들려주세요.</p>
+                    </div>
+                    <textarea id="answerA" rows="4" placeholder="가족의 답변을 적어주세요..."
+                              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-yellow-400 focus:outline-none"></textarea>
+                    
+                    <div class="tip-card mt-3">
+                        <p class="text-sm">💡 <strong>인터뷰 팁:</strong> "언제", "어디서", "누구와", "무엇을" 물어보세요!</p>
+                    </div>
+                </div>
+
+                <!-- B: 생각 -->
+                <div class="family-member hidden" id="stepB">
+                    <h4 class="font-bold text-lg mb-3">💭 B - 생각 (Belief)</h4>
+                    <div class="question-bubble">
+                        <p class="font-bold text-blue-600" id="questionB">그때 어떤 생각이 들었나요?</p>
+                    </div>
+                    <textarea id="answerB" rows="4" placeholder="가족의 답변을 적어주세요..."
+                              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:outline-none"></textarea>
+                    
+                    <div class="tip-card mt-3">
+                        <p class="text-sm">💡 <strong>인터뷰 팁:</strong> "왜 그렇게 생각했는지" 추가로 물어보세요!</p>
+                    </div>
+                </div>
+
+                <!-- C: 감정 -->
+                <div class="family-member hidden" id="stepC">
+                    <h4 class="font-bold text-lg mb-3">❤️ C - 감정 (Consequence)</h4>
+                    <div class="question-bubble">
+                        <p class="font-bold text-pink-600" id="questionC">그래서 어떤 감정을 느꼈나요?</p>
+                    </div>
+                    <textarea id="answerC" rows="4" placeholder="가족의 답변을 적어주세요..."
+                              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-400 focus:outline-none"></textarea>
+                    
+                    <!-- 감정 선택 도우미 -->
+                    <div class="mt-3">
+                        <p class="text-sm font-bold mb-2">감정 선택 도우미:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="addEmotion('기쁨')" class="emotion-badge emotion-positive">😊 기쁨</button>
+                            <button onclick="addEmotion('감사')" class="emotion-badge emotion-positive">🙏 감사</button>
+                            <button onclick="addEmotion('자랑스러움')" class="emotion-badge emotion-positive">🏆 자랑스러움</button>
+                            <button onclick="addEmotion('화남')" class="emotion-badge emotion-negative">😠 화남</button>
+                            <button onclick="addEmotion('슬픔')" class="emotion-badge emotion-negative">😢 슬픔</button>
+                            <button onclick="addEmotion('걱정')" class="emotion-badge emotion-negative">😰 걱정</button>
+                            <button onclick="addEmotion('놀람')" class="emotion-badge emotion-neutral">😲 놀람</button>
+                            <button onclick="addEmotion('평온')" class="emotion-badge emotion-neutral">😌 평온</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 버튼 -->
+                <div class="flex justify-between mt-6">
+                    <button id="prevBtn" onclick="previousStep()" class="px-6 py-3 bg-gray-400 text-white rounded-xl hover:bg-gray-500 transition hidden">
+                        ← 이전
+                    </button>
+                    <button id="nextBtn" onclick="nextStep()" class="px-6 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition ml-auto">
+                        다음 →
+                    </button>
+                    <button id="completeBtn" onclick="completeInterview()" class="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition ml-auto hidden">
+                        완료 ✓
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 인터뷰 결과 -->
+        <div id="interviewResult" class="hidden">
+            <div class="result-card" id="resultCard">
+                <h3 class="text-2xl font-bold text-center mb-6 text-gray-800">🌟 인터뷰 결과</h3>
+                
+                <div class="mb-6 text-center">
+                    <span class="text-5xl" id="resultEmoji">👨‍👩‍👧‍👦</span>
+                    <h4 class="text-xl font-bold mt-3" id="resultName">가족 이름</h4>
+                    <p class="text-gray-600" id="resultDate">2024년 12월</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="abc-component component-a">
+                        <h5 class="font-bold mb-2">🎬 상황</h5>
+                        <p id="resultA" class="text-sm"></p>
+                    </div>
+                    
+                    <div class="abc-component component-b">
+                        <h5 class="font-bold mb-2">💭 생각</h5>
+                        <p id="resultB" class="text-sm"></p>
+                    </div>
+                    
+                    <div class="abc-component component-c">
+                        <h5 class="font-bold mb-2">❤️ 감정</h5>
+                        <p id="resultC" class="text-sm"></p>
+                    </div>
+                </div>
+
+                <!-- 나의 감상 -->
+                <div class="mt-6 p-4 bg-purple-50 rounded-xl">
+                    <h5 class="font-bold mb-2">✍️ 인터뷰를 마치고 나의 생각</h5>
+                    <textarea id="myThoughts" rows="3" placeholder="가족의 ABC를 알게 된 소감을 적어보세요..."
+                              class="w-full px-3 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-400 focus:outline-none"></textarea>
+                </div>
+            </div>
+
+            <!-- 액션 버튼 -->
+            <div class="flex flex-wrap gap-3 justify-center mt-6">
+                <button onclick="saveAsImage()" class="share-button">
+                    📷 이미지로 저장
+                </button>
+                <button onclick="printResult()" class="share-button">
+                    🖨️ 인쇄하기
+                </button>
+                <button onclick="shareResult()" class="share-button">
+                    📤 공유하기
+                </button>
+                <button onclick="newInterview()" class="px-6 py-3 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition">
+                    🔄 새 인터뷰
+                </button>
+            </div>
+        </div>
+
+        <!-- 인터뷰 기록 -->
+        <div class="interview-card p-6 mt-8">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">📚 나의 인터뷰 기록</h3>
+            <div id="interviewHistory" class="space-y-3">
+                <p class="text-gray-500 text-center">아직 인터뷰 기록이 없어요. 첫 인터뷰를 시작해보세요!</p>
+            </div>
+        </div>
+
+        <!-- 도움말 -->
+        <div class="glass-effect rounded-3xl p-6 mt-8">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">💡 인터뷰 잘하는 법</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 bg-yellow-50 rounded-xl">
+                    <h4 class="font-bold mb-2">👂 경청하기</h4>
+                    <p class="text-sm">가족의 이야기를 끝까지 들어주세요. 중간에 끊지 마세요!</p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <h4 class="font-bold mb-2">🤝 공감하기</h4>
+                    <p class="text-sm">"그랬구나", "힘들었겠다" 같은 공감의 말을 해주세요.</p>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl">
+                    <h4 class="font-bold mb-2">🎯 집중하기</h4>
+                    <p class="text-sm">휴대폰은 잠시 내려놓고 가족에게만 집중해주세요.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 가이드 모달 -->
+    <div id="guideModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-3xl p-8 max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">📖 가족 ABC 인터뷰 가이드</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-bold text-lg mb-2">🎯 학습 목표</h4>
+                    <p class="text-gray-600">가족의 상황-생각-감정(ABC)을 이해하고 공감 능력을 기릅니다.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-2">📝 인터뷰 방법</h4>
+                    <ol class="list-decimal list-inside text-gray-600 space-y-1">
+                        <li>인터뷰할 가족을 선택합니다</li>
+                        <li>상황을 선택합니다 (행복, 화남, 슬픔, 자랑스러움)</li>
+                        <li>A-B-C 순서대로 질문하고 답변을 기록합니다</li>
+                        <li>인터뷰를 완료하고 결과를 저장합니다</li>
+                    </ol>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-2">💡 좋은 질문 예시</h4>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1">
+                        <li>구체적으로 어떤 일이 있었나요?</li>
+                        <li>그때 머릿속에 어떤 생각이 떠올랐나요?</li>
+                        <li>그 감정을 색깔로 표현한다면?</li>
+                        <li>비슷한 경험이 또 있었나요?</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <button onclick="closeGuide()" class="w-full mt-6 px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentStep = 0;
+        let selectedMember = '';
+        let selectedSituation = '';
+        let interviewData = {
+            member: '',
+            situation: '',
+            answerA: '',
+            answerB: '',
+            answerC: '',
+            thoughts: ''
+        };
+
+        // 가족 구성원 선택
+        function selectMember(member) {
+            selectedMember = member;
+            const nameInput = document.getElementById('memberName');
+            nameInput.value = member;
+            
+            // 버튼 활성화 표시
+            document.querySelectorAll('.family-member-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-purple-400');
+            });
+            event.target.closest('.family-member-btn').classList.add('ring-4', 'ring-purple-400');
+        }
+
+        // 상황 선택
+        function selectSituation(situation) {
+            selectedSituation = situation;
+            interviewData.situation = situation;
+            interviewData.member = document.getElementById('memberName').value || selectedMember;
+            
+            if (!interviewData.member) {
+                alert('먼저 인터뷰할 가족을 선택해주세요!');
+                return;
+            }
+            
+            // 인터뷰 폼 표시
+            document.getElementById('situationSelect').classList.add('hidden');
+            document.getElementById('interviewForm').classList.remove('hidden');
+            document.getElementById('stepA').classList.remove('hidden');
+            
+            // 질문 커스터마이징
+            customizeQuestions(situation);
+            updateProgress();
+        }
+
+        // 질문 커스터마이징
+        function customizeQuestions(situation) {
+            const questions = {
+                happy: {
+                    A: '최근에 가장 행복했던 순간은 언제였나요? 무슨 일이 있었나요?',
+                    B: '그때 어떤 생각이 들었나요? 왜 행복하다고 느꼈나요?',
+                    C: '그 행복한 감정을 자세히 설명해주실 수 있나요?'
+                },
+                angry: {
+                    A: '최근에 화가 났던 일이 있었나요? 어떤 상황이었나요?',
+                    B: '왜 화가 났나요? 어떤 생각이 들었나요?',
+                    C: '화가 난 감정이 어느 정도였나요? 어떻게 표현하고 싶었나요?'
+                },
+                sad: {
+                    A: '최근에 슬펐던 일이 있었나요? 무엇 때문이었나요?',
+                    B: '그때 어떤 생각이 들었나요? 왜 슬펐나요?',
+                    C: '슬픈 감정을 어떻게 표현할 수 있을까요?'
+                },
+                proud: {
+                    A: '최근에 자랑스러웠던 순간은 언제였나요? 무엇을 해냈나요?',
+                    B: '왜 자랑스러웠나요? 어떤 의미가 있었나요?',
+                    C: '그 자랑스러운 감정이 어떻게 느껴졌나요?'
+                }
+            };
+            
+            document.getElementById('questionA').textContent = questions[situation].A;
+            document.getElementById('questionB').textContent = questions[situation].B;
+            document.getElementById('questionC').textContent = questions[situation].C;
+        }
+
+        // 다음 단계
+        function nextStep() {
+            const steps = ['stepA', 'stepB', 'stepC'];
+            
+            // 현재 답변 저장
+            if (currentStep === 0) {
+                interviewData.answerA = document.getElementById('answerA').value;
+                if (!interviewData.answerA) {
+                    alert('답변을 입력해주세요!');
+                    return;
+                }
+            } else if (currentStep === 1) {
+                interviewData.answerB = document.getElementById('answerB').value;
+                if (!interviewData.answerB) {
+                    alert('답변을 입력해주세요!');
+                    return;
+                }
+            }
+            
+            // 현재 단계 숨기기
+            document.getElementById(steps[currentStep]).classList.add('hidden');
+            
+            // 다음 단계 표시
+            currentStep++;
+            if (currentStep < steps.length) {
+                document.getElementById(steps[currentStep]).classList.remove('hidden');
+                
+                // 버튼 업데이트
+                document.getElementById('prevBtn').classList.remove('hidden');
+                
+                if (currentStep === steps.length - 1) {
+                    document.getElementById('nextBtn').classList.add('hidden');
+                    document.getElementById('completeBtn').classList.remove('hidden');
+                }
+            }
+            
+            updateProgress();
+        }
+
+        // 이전 단계
+        function previousStep() {
+            const steps = ['stepA', 'stepB', 'stepC'];
+            
+            // 현재 단계 숨기기
+            document.getElementById(steps[currentStep]).classList.add('hidden');
+            
+            // 이전 단계 표시
+            currentStep--;
+            document.getElementById(steps[currentStep]).classList.remove('hidden');
+            
+            // 버튼 업데이트
+            if (currentStep === 0) {
+                document.getElementById('prevBtn').classList.add('hidden');
+            }
+            
+            document.getElementById('nextBtn').classList.remove('hidden');
+            document.getElementById('completeBtn').classList.add('hidden');
+            
+            updateProgress();
+        }
+
+        // 진행 상황 업데이트
+        function updateProgress() {
+            const progress = ((currentStep + 1) / 3) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('currentStep').textContent = currentStep + 1;
+        }
+
+        // 감정 추가
+        function addEmotion(emotion) {
+            const answerC = document.getElementById('answerC');
+            if (answerC.value) {
+                answerC.value += ', ' + emotion;
+            } else {
+                answerC.value = emotion;
+            }
+        }
+
+        // 인터뷰 완료
+        function completeInterview() {
+            interviewData.answerC = document.getElementById('answerC').value;
+            
+            if (!interviewData.answerC) {
+                alert('답변을 입력해주세요!');
+                return;
+            }
+            
+            // 결과 표시
+            showResult();
+            
+            // 기록 저장
+            saveToHistory();
+        }
+
+        // 결과 표시
+        function showResult() {
+            // 인터뷰 폼 숨기기
+            document.querySelector('.interview-card').classList.add('hidden');
+            
+            // 결과 표시
+            document.getElementById('interviewResult').classList.remove('hidden');
+            
+            // 데이터 채우기
+            const situationEmojis = {
+                happy: '😊',
+                angry: '😠',
+                sad: '😢',
+                proud: '🏆'
+            };
+            
+            document.getElementById('resultEmoji').textContent = situationEmojis[interviewData.situation];
+            document.getElementById('resultName').textContent = interviewData.member + '의 이야기';
+            document.getElementById('resultDate').textContent = new Date().toLocaleDateString('ko-KR');
+            document.getElementById('resultA').textContent = interviewData.answerA;
+            document.getElementById('resultB').textContent = interviewData.answerB;
+            document.getElementById('resultC').textContent = interviewData.answerC;
+        }
+
+        // 기록 저장
+        function saveToHistory() {
+            let history = JSON.parse(localStorage.getItem('familyInterviews') || '[]');
+            
+            const record = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                member: interviewData.member,
+                situation: interviewData.situation,
+                answerA: interviewData.answerA,
+                answerB: interviewData.answerB,
+                answerC: interviewData.answerC,
+                thoughts: interviewData.thoughts
+            };
+            
+            history.push(record);
+            localStorage.setItem('familyInterviews', JSON.stringify(history));
+            
+            updateHistoryDisplay();
+        }
+
+        // 기록 표시 업데이트
+        function updateHistoryDisplay() {
+            const history = JSON.parse(localStorage.getItem('familyInterviews') || '[]');
+            const historyDiv = document.getElementById('interviewHistory');
+            
+            if (history.length === 0) {
+                historyDiv.innerHTML = '<p class="text-gray-500 text-center">아직 인터뷰 기록이 없어요. 첫 인터뷰를 시작해보세요!</p>';
+            } else {
+                historyDiv.innerHTML = history.slice(-5).reverse().map(record => {
+                    const date = new Date(record.date).toLocaleDateString('ko-KR');
+                    const situationEmojis = {
+                        happy: '😊',
+                        angry: '😠',
+                        sad: '😢',
+                        proud: '🏆'
+                    };
+                    
+                    return `
+                        <div class="p-3 bg-gray-50 rounded-xl">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-2xl">${situationEmojis[record.situation]}</span>
+                                    <span class="font-bold ml-2">${record.member}</span>
+                                </div>
+                                <span class="text-sm text-gray-500">${date}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // 이미지로 저장
+        function saveAsImage() {
+            // 나의 생각 저장
+            interviewData.thoughts = document.getElementById('myThoughts').value;
+            
+            html2canvas(document.getElementById('resultCard')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `가족ABC인터뷰_${interviewData.member}_${new Date().getTime()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        // 인쇄
+        function printResult() {
+            window.print();
+        }
+
+        // 공유
+        function shareResult() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '가족 ABC 인터뷰',
+                    text: `${interviewData.member}의 ABC 이야기를 들어보았어요!`,
+                    url: window.location.href
+                });
+            } else {
+                alert('공유 기능은 모바일에서 사용 가능합니다.');
+            }
+        }
+
+        // 새 인터뷰
+        function newInterview() {
+            // 초기화
+            currentStep = 0;
+            selectedMember = '';
+            selectedSituation = '';
+            interviewData = {
+                member: '',
+                situation: '',
+                answerA: '',
+                answerB: '',
+                answerC: '',
+                thoughts: ''
+            };
+            
+            // 폼 초기화
+            document.getElementById('memberName').value = '';
+            document.getElementById('answerA').value = '';
+            document.getElementById('answerB').value = '';
+            document.getElementById('answerC').value = '';
+            document.getElementById('myThoughts').value = '';
+            
+            // UI 초기화
+            document.getElementById('interviewResult').classList.add('hidden');
+            document.querySelector('.interview-card').classList.remove('hidden');
+            document.getElementById('interviewForm').classList.add('hidden');
+            document.getElementById('situationSelect').classList.remove('hidden');
+            
+            // 단계 초기화
+            ['stepA', 'stepB', 'stepC'].forEach((step, index) => {
+                document.getElementById(step).classList.add('hidden');
+            });
+            
+            // 버튼 초기화
+            document.getElementById('prevBtn').classList.add('hidden');
+            document.getElementById('nextBtn').classList.remove('hidden');
+            document.getElementById('completeBtn').classList.add('hidden');
+            
+            // 진행 상황 초기화
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('currentStep').textContent = '0';
+        }
+
+        // 가이드 표시
+        function showGuide() {
+            document.getElementById('guideModal').classList.remove('hidden');
+        }
+
+        // 가이드 닫기
+        function closeGuide() {
+            document.getElementById('guideModal').classList.add('hidden');
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHistoryDisplay();
+        });
+    </script>
+</body>
+</html>
