@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔤 ABC 감정 분석기 - 상황, 생각, 감정 이해하기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .title-font {
+            font-family: 'Jua', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .abc-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .abc-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .abc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .thought-bubble {
+            position: relative;
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .thought-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            transform: rotate(45deg);
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .scenario-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .scenario-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .flow-arrow {
+            width: 60px;
+            height: 60px;
+            margin: 20px auto;
+            position: relative;
+        }
+        
+        .flow-arrow::after {
+            content: '↓';
+            font-size: 40px;
+            color: #667eea;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(10px); }
+        }
+        
+        .emotion-result {
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .positive-thought {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .negative-thought {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+        }
+        
+        .neutral-thought {
+            background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+        }
+        
+        .tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 30px;
+            bottom: -30px;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        
+        .timeline-item:last-child::before {
+            display: none;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: 5px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+        
+        .magic-wand {
+            display: inline-block;
+            animation: sparkle 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(10deg) scale(1.1); }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            animation: confetti-fall 3s linear;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <!-- 헤더 -->
+    <header class="glass-effect shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-4xl float-animation">🔤</span>
+                    <div>
+                        <h1 class="title-font text-2xl md:text-3xl text-gray-800">ABC 감정 분석기</h1>
+                        <p class="text-sm text-gray-600">상황-생각-감정의 연결을 이해해요</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-100 px-4 py-2 rounded-full">
+                        <span class="text-purple-700 font-bold">
+                            ⭐ <span id="totalStars">0</span>개
+                        </span>
+                    </div>
+                    <button onclick="window.location.href='../../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                        🏠 메인으로
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- ABC 소개 배너 -->
+        <div class="glass-effect rounded-3xl p-6 mb-8">
+            <div class="text-center">
+                <h2 class="title-font text-3xl text-gray-800 mb-4">ABC 모델이란?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                    <div class="bg-gradient-to-r from-purple-400 to-purple-500 text-white rounded-2xl p-4">
+                        <div class="text-4xl mb-2">🅰️</div>
+                        <h3 class="font-bold text-lg">Activating Event</h3>
+                        <p class="text-sm mt-1">일어난 상황이나 사건</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-pink-400 to-pink-500 text-white rounded-2xl p-4">
+                        <div class="text-4xl mb-2">🅱️</div>
+                        <h3 class="font-bold text-lg">Belief</h3>
+                        <p class="text-sm mt-1">그 상황에 대한 나의 생각</p>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-2xl p-4">
+                        <div class="text-4xl mb-2">🅾️</div>
+                        <h3 class="font-bold text-lg">Consequence</h3>
+                        <p class="text-sm mt-1">생각으로 인한 감정과 행동</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-gray-600">
+                    💡 같은 상황(A)에서도 생각(B)을 바꾸면 감정(C)이 달라져요!
+                </p>
+            </div>
+        </div>
+
+        <!-- 탭 네비게이션 -->
+        <div class="flex justify-center mb-8">
+            <div class="glass-effect rounded-full p-1 inline-flex relative">
+                <button onclick="showTab('learn')" id="learnTab" class="tab-btn px-6 py-2 rounded-full bg-purple-500 text-white transition">
+                    📚 ABC 배우기
+                </button>
+                <button onclick="showTab('practice')" id="practiceTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    ✏️ 연습하기
+                </button>
+                <button onclick="showTab('change')" id="changeTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    🪄 생각 바꾸기
+                </button>
+                <button onclick="showTab('diary')" id="diaryTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    📝 나의 ABC
+                </button>
+            </div>
+        </div>
+
+        <!-- ABC 배우기 탭 -->
+        <div id="learnContent" class="tab-content">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📚 ABC 모델 이해하기</h2>
+                
+                <!-- 예시 시나리오 -->
+                <div class="scenario-card" onclick="showExample(1)">
+                    <h3 class="text-xl font-bold mb-2">📖 예시 1: 친구가 인사를 안 했어요</h3>
+                    <p>클릭해서 ABC 분석을 확인해보세요!</p>
+                </div>
+                
+                <div id="example1" class="hidden">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="abc-card bg-white rounded-2xl p-6 shadow-lg">
+                            <h4 class="font-bold text-purple-600 mb-2">🅰️ 상황 (Activating Event)</h4>
+                            <p class="text-gray-700">학교에서 친한 친구를 만났는데 인사를 하지 않고 지나갔어요.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-arrow"></div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="abc-card bg-red-50 rounded-2xl p-6 shadow-lg">
+                                <h4 class="font-bold text-pink-600 mb-2">🅱️ 부정적 생각</h4>
+                                <div class="thought-bubble negative-thought text-white">
+                                    "친구가 나를 싫어하나봐. 나랑 놀기 싫은가봐."
+                                </div>
+                                <h4 class="font-bold text-blue-600 mb-2 mt-4">🅾️ 결과 감정</h4>
+                                <div class="emotion-result">
+                                    <span class="text-3xl">😢</span>
+                                    <span class="font-bold text-gray-700 ml-2">슬픔, 외로움</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="abc-card bg-green-50 rounded-2xl p-6 shadow-lg">
+                                <h4 class="font-bold text-pink-600 mb-2">🅱️ 긍정적 생각</h4>
+                                <div class="thought-bubble positive-thought text-white">
+                                    "친구가 급한 일이 있나봐. 나를 못 봤을 수도 있어."
+                                </div>
+                                <h4 class="font-bold text-blue-600 mb-2 mt-4">🅾️ 결과 감정</h4>
+                                <div class="emotion-result">
+                                    <span class="text-3xl">😊</span>
+                                    <span class="font-bold text-gray-700 ml-2">이해, 걱정</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="scenario-card mt-4" onclick="showExample(2)">
+                    <h3 class="text-xl font-bold mb-2">📖 예시 2: 시험 점수가 낮았어요</h3>
+                    <p>클릭해서 ABC 분석을 확인해보세요!</p>
+                </div>
+                
+                <div id="example2" class="hidden">
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="abc-card bg-white rounded-2xl p-6 shadow-lg">
+                            <h4 class="font-bold text-purple-600 mb-2">🅰️ 상황 (Activating Event)</h4>
+                            <p class="text-gray-700">수학 시험에서 60점을 받았어요.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flow-arrow"></div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="abc-card bg-red-50 rounded-2xl p-6 shadow-lg">
+                                <h4 class="font-bold text-pink-600 mb-2">🅱️ 부정적 생각</h4>
+                                <div class="thought-bubble negative-thought text-white">
+                                    "나는 수학을 못해. 나는 바보야."
+                                </div>
+                                <h4 class="font-bold text-blue-600 mb-2 mt-4">🅾️ 결과 감정</h4>
+                                <div class="emotion-result">
+                                    <span class="text-3xl">😞</span>
+                                    <span class="font-bold text-gray-700 ml-2">좌절, 무력감</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="abc-card bg-green-50 rounded-2xl p-6 shadow-lg">
+                                <h4 class="font-bold text-pink-600 mb-2">🅱️ 긍정적 생각</h4>
+                                <div class="thought-bubble positive-thought text-white">
+                                    "이번엔 준비가 부족했어. 다음엔 더 열심히 공부하면 돼!"
+                                </div>
+                                <h4 class="font-bold text-blue-600 mb-2 mt-4">🅾️ 결과 감정</h4>
+                                <div class="emotion-result">
+                                    <span class="text-3xl">💪</span>
+                                    <span class="font-bold text-gray-700 ml-2">동기부여, 희망</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 학습 요약 -->
+                <div class="mt-8 bg-yellow-50 rounded-2xl p-6">
+                    <h3 class="font-bold text-lg text-gray-800 mb-3">💡 핵심 포인트</h3>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>✅ 같은 상황에서도 생각에 따라 감정이 달라져요</li>
+                        <li>✅ 부정적 생각은 부정적 감정을 만들어요</li>
+                        <li>✅ 긍정적 생각은 긍정적 감정을 만들어요</li>
+                        <li>✅ 우리는 생각을 선택할 수 있어요!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 연습하기 탭 -->
+        <div id="practiceContent" class="tab-content hidden">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">✏️ ABC 분석 연습하기</h2>
+                
+                <!-- 연습 문제 -->
+                <div id="practiceScenarios">
+                    <!-- 시나리오가 동적으로 로드됨 -->
+                </div>
+                
+                <div class="text-center mt-6">
+                    <button onclick="loadPracticeScenario()" class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:scale-105 transition">
+                        🎲 새로운 상황 연습하기
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 생각 바꾸기 탭 -->
+        <div id="changeContent" class="tab-content hidden">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">🪄 마법의 생각 바꾸기</h2>
+                
+                <div class="text-center mb-6">
+                    <span class="text-6xl magic-wand">🪄</span>
+                    <p class="text-gray-600 mt-2">부정적인 생각을 긍정적으로 바꿔보세요!</p>
+                </div>
+                
+                <!-- 생각 변환 도구 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-bold text-lg mb-3 text-gray-800">😰 부정적 생각</h3>
+                        <div class="bg-red-50 rounded-2xl p-6">
+                            <select id="negativeThought" class="w-full p-3 rounded-lg border-2 border-red-200 mb-4">
+                                <option>나는 못해</option>
+                                <option>아무도 날 좋아하지 않아</option>
+                                <option>실패할 거야</option>
+                                <option>나는 바보야</option>
+                                <option>너무 어려워</option>
+                            </select>
+                            <textarea id="customNegative" class="w-full p-3 rounded-lg border-2 border-red-200 resize-none" rows="3" placeholder="또는 직접 입력해보세요..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-bold text-lg mb-3 text-gray-800">✨ 긍정적 생각으로 변환</h3>
+                        <div class="bg-green-50 rounded-2xl p-6">
+                            <div id="positiveTransform" class="min-h-[120px] p-4 bg-white rounded-lg">
+                                <p class="text-gray-500">부정적 생각을 선택하거나 입력해주세요</p>
+                            </div>
+                            <button onclick="transformThought()" class="mt-4 w-full px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition">
+                                ✨ 변환하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 변환 팁 -->
+                <div class="mt-8 bg-purple-50 rounded-2xl p-6">
+                    <h3 class="font-bold text-lg mb-3 text-gray-800">💡 생각 바꾸기 팁</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-purple-600 mb-2">1. "항상" → "가끔"</h4>
+                            <p class="text-sm text-gray-600">절대적인 표현을 유연하게 바꿔요</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-purple-600 mb-2">2. "못해" → "아직은"</h4>
+                            <p class="text-sm text-gray-600">성장 가능성을 열어둬요</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-purple-600 mb-2">3. "나는 ~야" → "지금은 ~해"</h4>
+                            <p class="text-sm text-gray-600">변화 가능성을 인정해요</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-purple-600 mb-2">4. 문제 → 도전</h4>
+                            <p class="text-sm text-gray-600">어려움을 기회로 봐요</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 나의 ABC 일기 탭 -->
+        <div id="diaryContent" class="tab-content hidden">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📝 나의 ABC 일기</h2>
+                
+                <!-- ABC 입력 폼 -->
+                <div class="bg-white rounded-2xl p-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800">오늘의 ABC 기록하기</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block font-bold text-purple-600 mb-2">🅰️ 어떤 일이 있었나요? (상황)</label>
+                            <textarea id="diaryEvent" class="w-full p-3 rounded-lg border-2 border-purple-200 focus:border-purple-400 focus:outline-none resize-none" rows="2" placeholder="예: 수업 시간에 발표를 했어요"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block font-bold text-pink-600 mb-2">🅱️ 어떤 생각이 들었나요? (생각)</label>
+                            <textarea id="diaryBelief" class="w-full p-3 rounded-lg border-2 border-pink-200 focus:border-pink-400 focus:outline-none resize-none" rows="2" placeholder="예: 잘할 수 있을 거야! 준비를 많이 했으니까"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block font-bold text-blue-600 mb-2">🅾️ 어떤 감정을 느꼈나요? (감정)</label>
+                            <div class="flex flex-wrap gap-2 mb-2">
+                                <button onclick="selectEmotion('기쁨')" class="emotion-tag px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm hover:bg-yellow-200">😊 기쁨</button>
+                                <button onclick="selectEmotion('자신감')" class="emotion-tag px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200">💪 자신감</button>
+                                <button onclick="selectEmotion('긴장')" class="emotion-tag px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm hover:bg-purple-200">😰 긴장</button>
+                                <button onclick="selectEmotion('걱정')" class="emotion-tag px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200">😟 걱정</button>
+                                <button onclick="selectEmotion('화남')" class="emotion-tag px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm hover:bg-red-200">😠 화남</button>
+                                <button onclick="selectEmotion('슬픔')" class="emotion-tag px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">😢 슬픔</button>
+                            </div>
+                            <input type="text" id="diaryConsequence" class="w-full p-3 rounded-lg border-2 border-blue-200 focus:border-blue-400 focus:outline-none" placeholder="감정을 선택하거나 직접 입력하세요">
+                        </div>
+                        
+                        <div>
+                            <label class="block font-bold text-gray-700 mb-2">📅 날짜</label>
+                            <input type="date" id="diaryDate" class="w-full p-3 rounded-lg border-2 border-gray-200 focus:border-gray-400 focus:outline-none">
+                        </div>
+                    </div>
+                    
+                    <button onclick="saveABCDiary()" class="mt-4 w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full hover:scale-105 transition">
+                        💾 ABC 일기 저장하기
+                    </button>
+                </div>
+                
+                <!-- 저장된 ABC 목록 -->
+                <div>
+                    <h3 class="font-bold text-lg mb-4 text-gray-800">📚 나의 ABC 기록들</h3>
+                    <div id="abcDiaryList" class="space-y-4">
+                        <!-- 저장된 기록들이 여기에 표시됨 -->
+                    </div>
+                </div>
+                
+                <!-- 통계 -->
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gradient-to-r from-purple-400 to-pink-400 rounded-2xl p-4 text-white text-center">
+                        <div class="text-3xl mb-1">📊</div>
+                        <div class="text-2xl font-bold" id="totalABC">0</div>
+                        <div class="text-sm">전체 기록</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-400 to-emerald-400 rounded-2xl p-4 text-white text-center">
+                        <div class="text-3xl mb-1">😊</div>
+                        <div class="text-2xl font-bold" id="positiveCount">0</div>
+                        <div class="text-sm">긍정적 기록</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-400 to-cyan-400 rounded-2xl p-4 text-white text-center">
+                        <div class="text-3xl mb-1">📈</div>
+                        <div class="text-2xl font-bold" id="growthRate">0%</div>
+                        <div class="text-sm">성장률</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 성공 모달 -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-3xl p-8 max-w-sm mx-4 transform scale-0 transition-transform" id="successModalContent">
+            <div class="text-center">
+                <div class="text-6xl mb-4" id="modalIcon">🎉</div>
+                <h3 class="text-2xl font-bold mb-2" id="modalTitle">성공!</h3>
+                <p class="text-gray-600 mb-4" id="modalMessage">잘했어요!</p>
+                <button onclick="closeModal()" class="px-6 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                    확인
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let totalStars = parseInt(localStorage.getItem('abcStars') || '0');
+        let abcDiary = JSON.parse(localStorage.getItem('abcDiary') || '[]');
+        let currentScenario = null;
+        let selectedEmotions = [];
+
+        // 연습 시나리오 데이터
+        const practiceScenarios = [
+            {
+                situation: "친구가 내 물건을 빌려갔는데 돌려주지 않아요",
+                thoughts: [
+                    { text: "친구가 나를 무시하는 것 같아", type: "negative", emotion: "화남, 서운함" },
+                    { text: "깜빡했을 거야, 다시 말해보자", type: "positive", emotion: "이해, 차분함" }
+                ]
+            },
+            {
+                situation: "선생님이 나를 칭찬했어요",
+                thoughts: [
+                    { text: "내가 정말 잘했구나!", type: "positive", emotion: "자랑스러움, 기쁨" },
+                    { text: "다른 친구들이 부러워할까봐 걱정돼", type: "negative", emotion: "걱정, 불안" }
+                ]
+            },
+            {
+                situation: "새로운 학원에 처음 가는 날이에요",
+                thoughts: [
+                    { text: "친구들과 잘 지낼 수 없을 거야", type: "negative", emotion: "두려움, 긴장" },
+                    { text: "새로운 친구를 사귈 좋은 기회야!", type: "positive", emotion: "설렘, 기대" }
+                ]
+            },
+            {
+                situation: "동생이 내 과자를 먹었어요",
+                thoughts: [
+                    { text: "동생이 너무 얄미워!", type: "negative", emotion: "화남, 짜증" },
+                    { text: "배가 고팠나봐, 다음엔 나눠먹자", type: "positive", emotion: "이해, 관대함" }
+                ]
+            },
+            {
+                situation: "운동회에서 우리 팀이 졌어요",
+                thoughts: [
+                    { text: "내가 못해서 진 거야", type: "negative", emotion: "죄책감, 슬픔" },
+                    { text: "최선을 다했으니 괜찮아", type: "positive", emotion: "만족, 뿌듯함" }
+                ]
+            }
+        ];
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStarsDisplay();
+            loadABCDiary();
+            setTodayDate();
+        });
+
+        // 별 표시 업데이트
+        function updateStarsDisplay() {
+            document.getElementById('totalStars').textContent = totalStars;
+        }
+
+        // 오늘 날짜 설정
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('diaryDate').value = today;
+        }
+
+        // 탭 전환
+        function showTab(tab) {
+            // 모든 탭 컨텐츠 숨기기
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // 모든 탭 버튼 스타일 초기화
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-500', 'text-white');
+                btn.classList.add('hover:bg-purple-100');
+            });
+            
+            // 선택된 탭 표시
+            document.getElementById(tab + 'Content').classList.remove('hidden');
+            document.getElementById(tab + 'Tab').classList.add('bg-purple-500', 'text-white');
+            document.getElementById(tab + 'Tab').classList.remove('hover:bg-purple-100');
+            
+            // 탭별 초기화
+            if (tab === 'practice') {
+                loadPracticeScenario();
+            } else if (tab === 'diary') {
+                loadABCDiary();
+            }
+        }
+
+        // 예시 보기
+        function showExample(num) {
+            const example = document.getElementById('example' + num);
+            example.classList.toggle('hidden');
+            
+            if (!example.classList.contains('hidden')) {
+                // 별 추가
+                totalStars += 5;
+                localStorage.setItem('abcStars', totalStars);
+                updateStarsDisplay();
+                
+                // 애니메이션
+                example.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        // 연습 시나리오 로드
+        function loadPracticeScenario() {
+            const randomIndex = Math.floor(Math.random() * practiceScenarios.length);
+            currentScenario = practiceScenarios[randomIndex];
+            
+            const html = `
+                <div class="bg-purple-50 rounded-2xl p-6 mb-6">
+                    <h3 class="font-bold text-purple-600 mb-3">🅰️ 상황</h3>
+                    <p class="text-lg text-gray-700">${currentScenario.situation}</p>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-bold text-pink-600 mb-3">🅱️ 어떤 생각이 들까요?</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${currentScenario.thoughts.map((thought, index) => `
+                            <div class="bg-white rounded-xl p-4 cursor-pointer hover:shadow-lg transition" onclick="selectThought(${index})">
+                                <p class="text-gray-700 mb-2">"${thought.text}"</p>
+                                <button class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">
+                                    선택하기
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div id="practiceResult" class="hidden">
+                    <!-- 결과가 여기에 표시됨 -->
+                </div>
+            `;
+            
+            document.getElementById('practiceScenarios').innerHTML = html;
+        }
+
+        // 생각 선택
+        function selectThought(index) {
+            const thought = currentScenario.thoughts[index];
+            const resultDiv = document.getElementById('practiceResult');
+            
+            const isPositive = thought.type === 'positive';
+            const color = isPositive ? 'green' : 'red';
+            const icon = isPositive ? '😊' : '😰';
+            const feedback = isPositive ? '긍정적인 생각을 선택했어요!' : '부정적인 생각이네요. 다른 방법도 있어요!';
+            
+            resultDiv.innerHTML = `
+                <div class="bg-${color}-50 rounded-2xl p-6">
+                    <h3 class="font-bold text-blue-600 mb-3">🅾️ 결과 감정</h3>
+                    <div class="text-center">
+                        <span class="text-5xl">${icon}</span>
+                        <p class="text-lg font-bold mt-2 text-gray-700">${thought.emotion}</p>
+                        <p class="text-gray-600 mt-2">${feedback}</p>
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.classList.remove('hidden');
+            
+            // 별 추가
+            totalStars += isPositive ? 10 : 5;
+            localStorage.setItem('abcStars', totalStars);
+            updateStarsDisplay();
+            
+            if (isPositive) {
+                createConfetti();
+            }
+        }
+
+        // 생각 변환
+        function transformThought() {
+            const negativeSelect = document.getElementById('negativeThought');
+            const customNegative = document.getElementById('customNegative').value;
+            const negative = customNegative || negativeSelect.value;
+            
+            const transformations = {
+                "나는 못해": "아직 배우는 중이야. 연습하면 잘할 수 있어!",
+                "아무도 날 좋아하지 않아": "모든 사람이 날 좋아할 순 없지만, 날 아끼는 사람들이 있어",
+                "실패할 거야": "도전해보지 않으면 모르는 거야. 최선을 다해보자!",
+                "나는 바보야": "실수는 누구나 해. 실수에서 배우면 더 똑똑해져!",
+                "너무 어려워": "어렵지만 한 걸음씩 해보면 할 수 있을 거야!"
+            };
+            
+            let positive = transformations[negative];
+            
+            if (!positive) {
+                // 커스텀 입력에 대한 일반적인 변환
+                if (negative.includes("못")) {
+                    positive = negative.replace("못", "아직은 못하지만 노력하면");
+                } else if (negative.includes("안")) {
+                    positive = negative.replace("안", "지금은 안 되지만 가능할");
+                } else {
+                    positive = "이 생각을 다른 관점에서 보면 새로운 기회가 될 수 있어!";
+                }
+            }
+            
+            document.getElementById('positiveTransform').innerHTML = `
+                <p class="text-green-600 font-bold text-lg">${positive}</p>
+                <div class="mt-2">
+                    <span class="text-3xl">✨</span>
+                    <span class="text-gray-600 ml-2">마법처럼 바뀌었어요!</span>
+                </div>
+            `;
+            
+            // 별 추가
+            totalStars += 15;
+            localStorage.setItem('abcStars', totalStars);
+            updateStarsDisplay();
+            
+            // 애니메이션
+            createSparkles();
+        }
+
+        // 감정 선택
+        function selectEmotion(emotion) {
+            document.getElementById('diaryConsequence').value = emotion;
+        }
+
+        // ABC 일기 저장
+        function saveABCDiary() {
+            const event = document.getElementById('diaryEvent').value.trim();
+            const belief = document.getElementById('diaryBelief').value.trim();
+            const consequence = document.getElementById('diaryConsequence').value.trim();
+            const date = document.getElementById('diaryDate').value;
+            
+            if (!event || !belief || !consequence) {
+                alert('모든 항목을 입력해주세요! 📝');
+                return;
+            }
+            
+            const entry = {
+                id: Date.now(),
+                date: date,
+                event: event,
+                belief: belief,
+                consequence: consequence,
+                timestamp: new Date().toISOString()
+            };
+            
+            abcDiary.unshift(entry);
+            localStorage.setItem('abcDiary', JSON.stringify(abcDiary));
+            
+            // 폼 초기화
+            document.getElementById('diaryEvent').value = '';
+            document.getElementById('diaryBelief').value = '';
+            document.getElementById('diaryConsequence').value = '';
+            setTodayDate();
+            
+            // 별 추가
+            totalStars += 20;
+            localStorage.setItem('abcStars', totalStars);
+            updateStarsDisplay();
+            
+            // 성공 메시지
+            showModal('📝', 'ABC 일기 저장 완료!', '오늘의 ABC를 기록했어요! +20⭐');
+            createConfetti();
+            
+            loadABCDiary();
+        }
+
+        // ABC 일기 불러오기
+        function loadABCDiary() {
+            const listDiv = document.getElementById('abcDiaryList');
+            
+            if (abcDiary.length === 0) {
+                listDiv.innerHTML = '<p class="text-gray-500 text-center">아직 기록이 없어요. 첫 ABC를 작성해보세요!</p>';
+            } else {
+                listDiv.innerHTML = abcDiary.slice(0, 5).map(entry => {
+                    const isPositive = checkPositiveBelief(entry.belief);
+                    const bgColor = isPositive ? 'bg-green-50' : 'bg-red-50';
+                    const icon = isPositive ? '😊' : '😰';
+                    
+                    return `
+                        <div class="abc-card ${bgColor} rounded-2xl p-6 shadow-lg">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-sm text-gray-500">${entry.date}</span>
+                                <span class="text-2xl">${icon}</span>
+                            </div>
+                            <div class="space-y-2">
+                                <div>
+                                    <span class="font-bold text-purple-600">🅰️</span>
+                                    <span class="text-gray-700 ml-2">${entry.event}</span>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-pink-600">🅱️</span>
+                                    <span class="text-gray-700 ml-2">${entry.belief}</span>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-blue-600">🅾️</span>
+                                    <span class="text-gray-700 ml-2">${entry.consequence}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            updateDiaryStats();
+        }
+
+        // 긍정적 생각 체크
+        function checkPositiveBelief(belief) {
+            const positiveWords = ['할 수 있', '괜찮', '좋', '잘', '행복', '기쁨', '희망', '성공', '가능', '노력'];
+            const negativeWords = ['못', '안', '싫', '나쁘', '실패', '불가능', '절대', '최악'];
+            
+            const positiveCount = positiveWords.filter(word => belief.includes(word)).length;
+            const negativeCount = negativeWords.filter(word => belief.includes(word)).length;
+            
+            return positiveCount > negativeCount;
+        }
+
+        // 일기 통계 업데이트
+        function updateDiaryStats() {
+            const total = abcDiary.length;
+            const positive = abcDiary.filter(entry => checkPositiveBelief(entry.belief)).length;
+            const growth = total > 0 ? Math.round((positive / total) * 100) : 0;
+            
+            document.getElementById('totalABC').textContent = total;
+            document.getElementById('positiveCount').textContent = positive;
+            document.getElementById('growthRate').textContent = growth + '%';
+        }
+
+        // 반짝이 효과
+        function createSparkles() {
+            const colors = ['#FFD93D', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
+            const container = document.getElementById('positiveTransform');
+            
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('span');
+                    sparkle.textContent = '✨';
+                    sparkle.style.position = 'absolute';
+                    sparkle.style.left = Math.random() * 100 + '%';
+                    sparkle.style.top = Math.random() * 100 + '%';
+                    sparkle.style.animation = 'float 2s ease-out';
+                    sparkle.style.opacity = '0';
+                    container.appendChild(sparkle);
+                    
+                    setTimeout(() => sparkle.remove(), 2000);
+                }, i * 100);
+            }
+        }
+
+        // 색종이 효과
+        function createConfetti() {
+            const colors = ['#FFD93D', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
+            }
+        }
+
+        // 모달 표시
+        function showModal(icon, title, message) {
+            const modal = document.getElementById('successModal');
+            const content = document.getElementById('successModalContent');
+            
+            document.getElementById('modalIcon').textContent = icon;
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.style.transform = 'scale(1)';
+            }, 100);
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            const modal = document.getElementById('successModal');
+            const content = document.getElementById('successModalContent');
+            content.style.transform = 'scale(0)';
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
