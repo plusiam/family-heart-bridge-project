@@ -6,6 +6,9 @@
     <title>🌤 감정 날씨 체크인 - 나의 마음 날씨</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../../js/portfolio-manager.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
         
@@ -108,11 +111,16 @@
         .weather-rainy { background: linear-gradient(135deg, #4682B4 0%, #1E90FF 100%); }
         .weather-stormy { background: linear-gradient(135deg, #483D8B 0%, #2F4F4F 100%); }
         .weather-rainbow { background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%); }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
     <!-- 헤더 -->
-    <header class="glass-effect shadow-lg sticky top-0 z-40">
+    <header class="glass-effect shadow-lg sticky top-0 z-40 no-print">
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
@@ -131,8 +139,11 @@
 
     <!-- 메인 컨텐츠 -->
     <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 학생 정보 섹션 -->
+        <div id="studentInfoSection"></div>
+        
         <!-- 탭 네비게이션 -->
-        <div class="flex justify-center mb-8">
+        <div class="flex justify-center mb-8 no-print">
             <div class="glass-effect rounded-full p-1 inline-flex">
                 <button onclick="showTab('checkin')" id="checkinTab" class="tab-btn px-6 py-2 rounded-full bg-purple-500 text-white transition">
                     ✨ 체크인
@@ -148,184 +159,189 @@
 
         <!-- 체크인 탭 -->
         <div id="checkinContent" class="tab-content">
-            <!-- 날짜 표시 -->
-            <div class="text-center mb-8">
-                <div class="glass-effect rounded-3xl p-6 inline-block">
-                    <p class="text-gray-600 mb-2">오늘은</p>
-                    <p class="text-3xl font-bold text-gray-800" id="todayDate"></p>
+            <div id="mainContent">
+                <!-- 날짜 표시 -->
+                <div class="text-center mb-8">
+                    <div class="glass-effect rounded-3xl p-6 inline-block">
+                        <p class="text-gray-600 mb-2">오늘은</p>
+                        <p class="text-3xl font-bold text-gray-800" id="todayDate"></p>
+                    </div>
                 </div>
-            </div>
 
-            <!-- STEP 1: 날씨 선택 -->
-            <div class="glass-effect rounded-3xl p-8 mb-8">
-                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">
-                    <span class="text-4xl">1️⃣</span> 오늘 나의 마음 날씨를 선택해주세요
-                </h2>
-                
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="weatherCards">
-                    <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="sunny">
-                        <div class="text-6xl mb-2">☀️</div>
-                        <h3 class="font-bold text-lg">맑음</h3>
-                        <p class="text-sm text-gray-600 mt-1">기분이 아주 좋아요!</p>
-                    </div>
-                    <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="partly">
-                        <div class="text-6xl mb-2">⛅</div>
-                        <h3 class="font-bold text-lg">구름 조금</h3>
-                        <p class="text-sm text-gray-600 mt-1">대체로 괜찮아요</p>
-                    </div>
-                    <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="cloudy">
-                        <div class="text-6xl mb-2">☁️</div>
-                        <h3 class="font-bold text-lg">흐림</h3>
-                        <p class="text-sm text-gray-600 mt-1">그저 그래요</p>
-                    </div>
-                    <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="rainy">
-                        <div class="text-6xl mb-2">🌧️</div>
-                        <h3 class="font-bold text-lg">비</h3>
-                        <p class="text-sm text-gray-600 mt-1">조금 슬퍼요</p>
-                    </div>
-                    <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="stormy">
-                        <div class="text-6xl mb-2">⛈️</div>
-                        <h3 class="font-bold text-lg">폭풍</h3>
-                        <p class="text-sm text-gray-600 mt-1">많이 힘들어요</p>
-                    </div>
-                    <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="rainbow">
-                        <div class="text-6xl mb-2">🌈</div>
-                        <h3 class="font-bold text-lg">무지개</h3>
-                        <p class="text-sm text-gray-600 mt-1">특별한 일이 있어요!</p>
+                <!-- STEP 1: 날씨 선택 -->
+                <div class="glass-effect rounded-3xl p-8 mb-8">
+                    <h2 class="title-font text-2xl text-center mb-6 text-gray-800">
+                        <span class="text-4xl">1️⃣</span> 오늘 나의 마음 날씨를 선택해주세요
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="weatherCards">
+                        <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="sunny">
+                            <div class="text-6xl mb-2">☀️</div>
+                            <h3 class="font-bold text-lg">맑음</h3>
+                            <p class="text-sm text-gray-600 mt-1">기분이 아주 좋아요!</p>
+                        </div>
+                        <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="partly">
+                            <div class="text-6xl mb-2">⛅</div>
+                            <h3 class="font-bold text-lg">구름 조금</h3>
+                            <p class="text-sm text-gray-600 mt-1">대체로 괜찮아요</p>
+                        </div>
+                        <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="cloudy">
+                            <div class="text-6xl mb-2">☁️</div>
+                            <h3 class="font-bold text-lg">흐림</h3>
+                            <p class="text-sm text-gray-600 mt-1">그저 그래요</p>
+                        </div>
+                        <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="rainy">
+                            <div class="text-6xl mb-2">🌧️</div>
+                            <h3 class="font-bold text-lg">비</h3>
+                            <p class="text-sm text-gray-600 mt-1">조금 슬퍼요</p>
+                        </div>
+                        <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="stormy">
+                            <div class="text-6xl mb-2">⛈️</div>
+                            <h3 class="font-bold text-lg">폭풍</h3>
+                            <p class="text-sm text-gray-600 mt-1">많이 힘들어요</p>
+                        </div>
+                        <div class="weather-card bg-white rounded-2xl p-6 text-center shadow-lg" data-weather="rainbow">
+                            <div class="text-6xl mb-2">🌈</div>
+                            <h3 class="font-bold text-lg">무지개</h3>
+                            <p class="text-sm text-gray-600 mt-1">특별한 일이 있어요!</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- STEP 2: 감정 선택 -->
-            <div class="glass-effect rounded-3xl p-8 mb-8">
-                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">
-                    <span class="text-4xl">2️⃣</span> 지금 느끼는 감정을 모두 선택해주세요
-                </h2>
-                
-                <div class="flex flex-wrap justify-center gap-4" id="emotionBubbles">
-                    <div class="emotion-bubble" data-emotion="기쁨">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😊</div>
-                            <p class="text-sm font-medium">기쁨</p>
+                <!-- STEP 2: 감정 선택 -->
+                <div class="glass-effect rounded-3xl p-8 mb-8">
+                    <h2 class="title-font text-2xl text-center mb-6 text-gray-800">
+                        <span class="text-4xl">2️⃣</span> 지금 느끼는 감정을 모두 선택해주세요
+                    </h2>
+                    
+                    <div class="flex flex-wrap justify-center gap-4" id="emotionBubbles">
+                        <div class="emotion-bubble" data-emotion="기쁨">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😊</div>
+                                <p class="text-sm font-medium">기쁨</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="신남">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">🤗</div>
-                            <p class="text-sm font-medium">신남</p>
+                        <div class="emotion-bubble" data-emotion="신남">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">🤗</div>
+                                <p class="text-sm font-medium">신남</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="평온">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😌</div>
-                            <p class="text-sm font-medium">평온</p>
+                        <div class="emotion-bubble" data-emotion="평온">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😌</div>
+                                <p class="text-sm font-medium">평온</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="감사">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">🙏</div>
-                            <p class="text-sm font-medium">감사</p>
+                        <div class="emotion-bubble" data-emotion="감사">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">🙏</div>
+                                <p class="text-sm font-medium">감사</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="사랑">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">🥰</div>
-                            <p class="text-sm font-medium">사랑</p>
+                        <div class="emotion-bubble" data-emotion="사랑">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">🥰</div>
+                                <p class="text-sm font-medium">사랑</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="걱정">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😟</div>
-                            <p class="text-sm font-medium">걱정</p>
+                        <div class="emotion-bubble" data-emotion="걱정">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😟</div>
+                                <p class="text-sm font-medium">걱정</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="슬픔">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😢</div>
-                            <p class="text-sm font-medium">슬픔</p>
+                        <div class="emotion-bubble" data-emotion="슬픔">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😢</div>
+                                <p class="text-sm font-medium">슬픔</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="화남">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😠</div>
-                            <p class="text-sm font-medium">화남</p>
+                        <div class="emotion-bubble" data-emotion="화남">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😠</div>
+                                <p class="text-sm font-medium">화남</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="두려움">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😨</div>
-                            <p class="text-sm font-medium">두려움</p>
+                        <div class="emotion-bubble" data-emotion="두려움">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😨</div>
+                                <p class="text-sm font-medium">두려움</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="놀람">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😲</div>
-                            <p class="text-sm font-medium">놀람</p>
+                        <div class="emotion-bubble" data-emotion="놀람">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😲</div>
+                                <p class="text-sm font-medium">놀람</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="부끄러움">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😳</div>
-                            <p class="text-sm font-medium">부끄러움</p>
+                        <div class="emotion-bubble" data-emotion="부끄러움">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😳</div>
+                                <p class="text-sm font-medium">부끄러움</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="emotion-bubble" data-emotion="피곤">
-                        <div class="text-center">
-                            <div class="text-5xl mb-1">😴</div>
-                            <p class="text-sm font-medium">피곤</p>
+                        <div class="emotion-bubble" data-emotion="피곤">
+                            <div class="text-center">
+                                <div class="text-5xl mb-1">😴</div>
+                                <p class="text-sm font-medium">피곤</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- STEP 3: 한 줄 일기 -->
-            <div class="glass-effect rounded-3xl p-8 mb-8">
-                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">
-                    <span class="text-4xl">3️⃣</span> 오늘의 기분을 한 줄로 표현해주세요
-                </h2>
-                
-                <textarea id="diaryText" 
-                    class="w-full p-4 rounded-xl border-2 border-purple-200 focus:border-purple-400 focus:outline-none resize-none text-lg"
-                    rows="3"
-                    placeholder="예: 친구와 함께 놀아서 정말 즐거웠어요! 🎈"
-                    maxlength="100"></textarea>
-                
-                <div class="text-right mt-2">
-                    <span class="text-sm text-gray-500">
-                        <span id="charCount">0</span> / 100
-                    </span>
-                </div>
-                
-                <!-- 감정 스티커 추가 -->
-                <div class="mt-4">
-                    <p class="text-sm text-gray-600 mb-2">스티커를 추가해보세요!</p>
-                    <div class="flex gap-2 flex-wrap">
-                        <button onclick="addSticker('🌟')" class="text-2xl hover:scale-125 transition">🌟</button>
-                        <button onclick="addSticker('❤️')" class="text-2xl hover:scale-125 transition">❤️</button>
-                        <button onclick="addSticker('🎈')" class="text-2xl hover:scale-125 transition">🎈</button>
-                        <button onclick="addSticker('🎨')" class="text-2xl hover:scale-125 transition">🎨</button>
-                        <button onclick="addSticker('🎵')" class="text-2xl hover:scale-125 transition">🎵</button>
-                        <button onclick="addSticker('📚')" class="text-2xl hover:scale-125 transition">📚</button>
-                        <button onclick="addSticker('🏃')" class="text-2xl hover:scale-125 transition">🏃</button>
-                        <button onclick="addSticker('🍕')" class="text-2xl hover:scale-125 transition">🍕</button>
-                        <button onclick="addSticker('🎮')" class="text-2xl hover:scale-125 transition">🎮</button>
-                        <button onclick="addSticker('🌸')" class="text-2xl hover:scale-125 transition">🌸</button>
+                <!-- STEP 3: 한 줄 일기 -->
+                <div class="glass-effect rounded-3xl p-8 mb-8">
+                    <h2 class="title-font text-2xl text-center mb-6 text-gray-800">
+                        <span class="text-4xl">3️⃣</span> 오늘의 기분을 한 줄로 표현해주세요
+                    </h2>
+                    
+                    <textarea id="diaryText" 
+                        class="w-full p-4 rounded-xl border-2 border-purple-200 focus:border-purple-400 focus:outline-none resize-none text-lg"
+                        rows="3"
+                        placeholder="예: 친구와 함께 놀아서 정말 즐거웠어요! 🎈"
+                        maxlength="100"></textarea>
+                    
+                    <div class="text-right mt-2">
+                        <span class="text-sm text-gray-500">
+                            <span id="charCount">0</span> / 100
+                        </span>
+                    </div>
+                    
+                    <!-- 감정 스티커 추가 -->
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600 mb-2">스티커를 추가해보세요!</p>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="addSticker('🌟')" class="text-2xl hover:scale-125 transition">🌟</button>
+                            <button onclick="addSticker('❤️')" class="text-2xl hover:scale-125 transition">❤️</button>
+                            <button onclick="addSticker('🎈')" class="text-2xl hover:scale-125 transition">🎈</button>
+                            <button onclick="addSticker('🎨')" class="text-2xl hover:scale-125 transition">🎨</button>
+                            <button onclick="addSticker('🎵')" class="text-2xl hover:scale-125 transition">🎵</button>
+                            <button onclick="addSticker('📚')" class="text-2xl hover:scale-125 transition">📚</button>
+                            <button onclick="addSticker('🏃')" class="text-2xl hover:scale-125 transition">🏃</button>
+                            <button onclick="addSticker('🍕')" class="text-2xl hover:scale-125 transition">🍕</button>
+                            <button onclick="addSticker('🎮')" class="text-2xl hover:scale-125 transition">🎮</button>
+                            <button onclick="addSticker('🌸')" class="text-2xl hover:scale-125 transition">🌸</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- 저장 버튼 -->
-            <div class="text-center">
-                <button onclick="saveCheckin()" 
-                    class="px-12 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold rounded-full hover:scale-105 transform transition shadow-lg">
-                    💾 오늘의 감정 날씨 저장하기
-                </button>
+                <!-- 저장 버튼 -->
+                <div class="text-center mb-6">
+                    <button onclick="saveCheckin()" 
+                        class="px-12 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold rounded-full hover:scale-105 transform transition shadow-lg">
+                        💾 오늘의 감정 날씨 저장하기
+                    </button>
+                </div>
+
+                <!-- 다운로드 버튼 섹션 -->
+                <div id="downloadSection"></div>
             </div>
         </div>
 
         <!-- 기록 보기 탭 -->
         <div id="historyContent" class="tab-content hidden">
-            <div class="glass-effect rounded-3xl p-8">
+            <div class="glass-effect rounded-3xl p-8" id="historyMainContent">
                 <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📅 나의 감정 날씨 달력</h2>
                 
                 <!-- 월 선택 -->
@@ -358,12 +374,19 @@
                     <h3 class="font-bold text-lg mb-3">📝 이날의 기록</h3>
                     <div id="dayDetailContent"></div>
                 </div>
+                
+                <!-- 달력 다운로드 버튼 -->
+                <div class="flex justify-center mt-6 no-print">
+                    <button onclick="downloadCalendar()" class="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition">
+                        📷 달력 이미지로 저장
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- 패턴 분석 탭 -->
         <div id="patternContent" class="tab-content hidden">
-            <div class="glass-effect rounded-3xl p-8">
+            <div class="glass-effect rounded-3xl p-8" id="patternMainContent">
                 <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📊 나의 감정 패턴 분석</h2>
                 
                 <!-- 통계 카드 -->
@@ -395,6 +418,13 @@
                 <div class="bg-white rounded-2xl p-6">
                     <h3 class="font-bold text-lg mb-4">🎨 감정 분포도</h3>
                     <canvas id="emotionChart" width="400" height="200"></canvas>
+                </div>
+                
+                <!-- 분석 보고서 다운로드 버튼 -->
+                <div class="flex justify-center mt-6 no-print">
+                    <button onclick="downloadAnalysis()" class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition">
+                        📄 분석 보고서 PDF로 저장
+                    </button>
                 </div>
             </div>
         </div>
@@ -429,6 +459,19 @@
             updateCalendar();
             updateCharts();
             updateStats();
+            
+            // 학생 정보 섹션 자동 추가
+            if (typeof portfolioManager !== 'undefined') {
+                const infoSection = document.getElementById('studentInfoSection');
+                if (infoSection) {
+                    infoSection.innerHTML = portfolioManager.createStudentInfoHTML();
+                }
+                
+                const downloadSection = document.getElementById('downloadSection');
+                if (downloadSection) {
+                    downloadSection.innerHTML = portfolioManager.createDownloadButtonsHTML();
+                }
+            }
         });
 
         // 오늘 날짜 표시
@@ -540,6 +583,16 @@
             
             // 로컬 스토리지에 저장
             localStorage.setItem('emotionWeatherRecords', JSON.stringify(records));
+            
+            // 포트폴리오에 활동 추가
+            if (typeof portfolioManager !== 'undefined') {
+                portfolioManager.addActivity({
+                    toolName: '감정 날씨 체크인',
+                    type: 'emotion-weather',
+                    description: `날씨: ${record.weather}, 감정: ${record.emotions.join(', ')}`,
+                    data: record
+                });
+            }
             
             // 성공 애니메이션
             showSuccessModal();
@@ -851,6 +904,20 @@
             }
             
             document.getElementById('streakDays').textContent = streak + '일';
+        }
+
+        // 달력 다운로드
+        function downloadCalendar() {
+            if (typeof portfolioManager !== 'undefined') {
+                portfolioManager.downloadAsImage('historyMainContent', `감정날씨달력_${currentViewMonth.getFullYear()}년${currentViewMonth.getMonth() + 1}월.png`);
+            }
+        }
+
+        // 분석 보고서 다운로드
+        function downloadAnalysis() {
+            if (typeof portfolioManager !== 'undefined') {
+                portfolioManager.downloadAsPDF('patternMainContent', `감정패턴분석_${new Date().toISOString().split('T')[0]}.pdf`);
+            }
         }
     </script>
 </body>
