@@ -18,7 +18,7 @@
 
 #### 🌤 감정 날씨 도구
 - **[감정 날씨 체크인](./tools/emotion-weather)** - 매일 아침 나의 마음 날씨 확인하기
-- **[감정 날씨 일기](./tools/emotion-diary)** - 하루의 감정 변화 기록하기
+- **[감정 날씨 일기](https://plusiam.github.io/emotion-weather-diary/)** ✅ - 하루의 감정 변화 기록하기
 - **[감정 예보](./tools/emotion-forecast)** - 내일의 감정 날씨 예측하기
 
 #### 🎴 감정 카드 도구
@@ -146,4 +146,4 @@
 
 💕 **"마음의 날씨를 읽고, 생각의 렌즈를 바꾸며, 서로의 감정을 이해하는 아이들"**
 
-만든이: 한기영 선생님 | 문의: yeohanki@gmail.com
+만든이: 룰루랄라 한기쌤 | 문의: yeohanki@gmail.com
