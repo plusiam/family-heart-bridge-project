@@ -23,8 +23,12 @@
 
 #### 🎴 감정 카드 도구
 - **[디지털 감정 카드](./tools/emotion-cards)** - 다양한 감정 이름 알아보기
-- **[감정 4분면 만들기](./tools/emotion-quadrant)** - 감정의 에너지와 방향 이해하기
+- **[감정 4분면 탐험가 Plus](https://plusiam.github.io/emotion-explorer/)** ✅ - Russell 모델 기반 체계적 감정 탐구
 - **[나만의 감정 사전](./tools/my-emotion-dictionary)** - 특별한 감정 이름 만들기
+
+#### 🎯 추가 성찰 도구
+- **[나의 버킷리스트](https://plusiam.github.io/bucket-dreams/)** ✅ - 목표 설정과 달성을 통한 자기 성찰
+- **[내 마음을 알리는 문패](https://plusiam.github.io/munpae-maker/)** ✅ - 감정 상태를 창의적으로 표현
 
 ### 2단계: 가족 - 우리 가족의 행복 만들기 (5-8차시)
 
@@ -38,9 +42,10 @@
 
 #### 🔤 ABC 모델 도구
 - **[ABC 감정 분석기](./tools/abc-analyzer)** - 상황-생각-감정 연결 이해하기
-- **[ABC 친구 상담사](https://plusiam.github.io/abc-friend-consultant)** ✅
 - **[가족 ABC 인터뷰](./tools/family-abc-interview)** - 가족의 ABC 알아보기
 - **[관점 바꾸기 게임](./tools/perspective-game)** - 다른 생각으로 감정 바꾸기
+- **[ABC 생각 바꾸기](https://plusiam.github.io/maum-hub/)** ✅ - 인지 전환 연습 (maum-hub 참조)
+- **[역지사지 ABC 상담 브릿지](https://plusiam.github.io/maum-hub/)** ✅ - 공감 상담 (maum-hub 참조)
 
 ### 프로젝트 마무리 도구 (13-15차시)
 
@@ -84,7 +89,7 @@
 |------|------|-----------|-----------|
 | 1 | 가족 속에서 나는 누구일까? | See-Think-Wonder | 20분 |
 | 2 | 오늘 나의 감정 날씨는? | 감정 날씨 체크인 | 15분 |
-| 3 | 감정카드로 마음 찾기 | 디지털 감정 카드, 감정 4분면 | 25분 |
+| 3 | 감정카드로 마음 찾기 | 디지털 감정 카드, 감정 4분면 탐험가 Plus | 25분 |
 | 4 | 감정 성장 포트폴리오 시작 | 감정 일기 | 20분 |
 | 5 | 나의 감정이 가족에게 미치는 영향 | 가족 감정 그래프 | 20분 |
 | 6 | 효와 우애의 진짜 의미 | 효도 쿠폰 만들기 | 25분 |
@@ -116,6 +121,10 @@
 - [수업 지도안](./resources/lesson-plans)
 - [평가 루브릭](./resources/rubrics)
 - [학부모 안내문](./resources/parent-guide)
+
+### 관련 프로젝트
+- **[마음 허브(maum-hub)](https://plusiam.github.io/maum-hub/)** - 정서조절 웹학습지 모음
+- **[마음봄 프로젝트](https://plusiam.github.io/maumbom-website/)** - 마음 성장과 치유를 돕는 종합 프로젝트
 
 ### 참고 도서
 - 『감정 수업』 - 조원희
