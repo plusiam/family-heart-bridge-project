@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔮 감정 예보 - 내일의 감정 날씨 예측하기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .title-font {
+            font-family: 'Jua', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .crystal-ball {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(147,51,234,0.3), rgba(109,40,217,0.6));
+            box-shadow: 
+                0 0 60px rgba(147,51,234,0.5),
+                inset 0 0 60px rgba(147,51,234,0.3),
+                0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .crystal-ball::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 20%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(circle, rgba(255,255,255,0.9), transparent);
+            border-radius: 50%;
+            filter: blur(10px);
+        }
+        
+        .crystal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 80px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        .forecast-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .forecast-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+            border-radius: 20px;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .forecast-card:hover::before {
+            opacity: 1;
+        }
+        
+        .forecast-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .magic-sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: sparkle 2s linear infinite;
+        }
+        
+        @keyframes sparkle {
+            0% { opacity: 0; transform: translateY(0) scale(0); }
+            50% { opacity: 1; transform: translateY(-20px) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(0); }
+        }
+        
+        .factor-bubble {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .factor-bubble:hover {
+            transform: scale(1.1) rotate(3deg);
+        }
+        
+        .factor-bubble.selected {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            animation: bounce 0.5s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .advice-card {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .advice-card::after {
+            content: '💡';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 80px;
+            opacity: 0.2;
+        }
+        
+        .weather-forecast-item {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .weather-forecast-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .accuracy-meter {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .accuracy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .magic-wand {
+            display: inline-block;
+            animation: wave 2s ease-in-out infinite;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+        
+        .star-rating {
+            display: inline-flex;
+            gap: 5px;
+        }
+        
+        .star {
+            font-size: 24px;
+            color: #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .star.filled {
+            color: #fbbf24;
+            animation: starPop 0.3s ease;
+        }
+        
+        @keyframes starPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #f0f;
+            animation: confetti-fall 3s linear;
+            z-index: 1000;
+        }
+        
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <!-- 헤더 -->
+    <header class="glass-effect shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-4xl magic-wand">🔮</span>
+                    <div>
+                        <h1 class="title-font text-2xl md:text-3xl text-gray-800">감정 예보</h1>
+                        <p class="text-sm text-gray-600">내일의 감정 날씨를 예측해보세요</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-100 px-4 py-2 rounded-full">
+                        <span class="text-purple-700 font-bold">
+                            🎯 정확도 <span id="accuracyRate">0</span>%
+                        </span>
+                    </div>
+                    <button onclick="window.location.href='../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                        🏠 메인으로
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 탭 네비게이션 -->
+        <div class="flex justify-center mb-8">
+            <div class="glass-effect rounded-full p-1 inline-flex">
+                <button onclick="showTab('predict')" id="predictTab" class="tab-btn px-6 py-2 rounded-full bg-purple-500 text-white transition">
+                    🔮 예보하기
+                </button>
+                <button onclick="showTab('weekly')" id="weeklyTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    📅 주간 예보
+                </button>
+                <button onclick="showTab('history')" id="historyTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    📊 예보 기록
+                </button>
+                <button onclick="showTab('tips')" id="tipsTab" class="tab-btn px-6 py-2 rounded-full hover:bg-purple-100 transition">
+                    💡 감정 팁
+                </button>
+            </div>
+        </div>
+
+        <!-- 예보하기 탭 -->
+        <div id="predictContent" class="tab-content">
+            <!-- 수정구 -->
+            <div class="flex justify-center mb-8">
+                <div class="crystal-ball">
+                    <div class="crystal-content" id="crystalEmoji">❓</div>
+                    <!-- 반짝임 효과 -->
+                    <div class="magic-sparkle" style="top: 20%; left: 30%; animation-delay: 0s;"></div>
+                    <div class="magic-sparkle" style="top: 60%; left: 70%; animation-delay: 0.5s;"></div>
+                    <div class="magic-sparkle" style="top: 80%; left: 40%; animation-delay: 1s;"></div>
+                    <div class="magic-sparkle" style="top: 40%; left: 80%; animation-delay: 1.5s;"></div>
+                </div>
+            </div>
+
+            <!-- 예보 입력 -->
+            <div class="glass-effect rounded-3xl p-8 mb-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">내일의 감정을 예측해보세요!</h2>
+                
+                <!-- STEP 1: 내일 일정 -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-3 text-purple-700">1️⃣ 내일 예정된 일은?</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button onclick="toggleFactor(this, 'school')" class="factor-bubble">🎒 학교/학원</button>
+                        <button onclick="toggleFactor(this, 'test')" class="factor-bubble">📝 시험/발표</button>
+                        <button onclick="toggleFactor(this, 'play')" class="factor-bubble">🎮 놀이/게임</button>
+                        <button onclick="toggleFactor(this, 'friend')" class="factor-bubble">👫 친구 만남</button>
+                        <button onclick="toggleFactor(this, 'family')" class="factor-bubble">👨‍👩‍👧 가족 시간</button>
+                        <button onclick="toggleFactor(this, 'trip')" class="factor-bubble">🚗 외출/여행</button>
+                        <button onclick="toggleFactor(this, 'hobby')" class="factor-bubble">🎨 취미 활동</button>
+                        <button onclick="toggleFactor(this, 'rest')" class="factor-bubble">😴 휴식</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: 오늘 기분 -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-3 text-pink-700">2️⃣ 오늘의 기분은 어떤가요?</h3>
+                    <div class="flex justify-center gap-4">
+                        <button onclick="selectTodayMood('very-bad')" class="weather-forecast-item px-6 py-4">
+                            <div class="text-3xl">😢</div>
+                            <div class="text-sm mt-1">매우 나쁨</div>
+                        </button>
+                        <button onclick="selectTodayMood('bad')" class="weather-forecast-item px-6 py-4">
+                            <div class="text-3xl">😟</div>
+                            <div class="text-sm mt-1">나쁨</div>
+                        </button>
+                        <button onclick="selectTodayMood('normal')" class="weather-forecast-item px-6 py-4">
+                            <div class="text-3xl">😐</div>
+                            <div class="text-sm mt-1">보통</div>
+                        </button>
+                        <button onclick="selectTodayMood('good')" class="weather-forecast-item px-6 py-4">
+                            <div class="text-3xl">😊</div>
+                            <div class="text-sm mt-1">좋음</div>
+                        </button>
+                        <button onclick="selectTodayMood('very-good')" class="weather-forecast-item px-6 py-4">
+                            <div class="text-3xl">😄</div>
+                            <div class="text-sm mt-1">매우 좋음</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: 기대감 -->
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-3 text-blue-700">3️⃣ 내일에 대한 기대감은?</h3>
+                    <input type="range" id="expectationRange" min="0" max="100" value="50" class="w-full">
+                    <div class="flex justify-between text-sm text-gray-600 mt-2">
+                        <span>😰 걱정돼요</span>
+                        <span>😐 그저 그래요</span>
+                        <span>🤗 기대돼요!</span>
+                    </div>
+                </div>
+
+                <!-- 예보 버튼 -->
+                <div class="text-center">
+                    <button onclick="generateForecast()" class="px-12 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold rounded-full hover:scale-105 transform transition shadow-lg">
+                        🔮 감정 예보 보기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 예보 결과 -->
+            <div id="forecastResult" class="hidden">
+                <div class="glass-effect rounded-3xl p-8">
+                    <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📊 내일의 감정 예보</h2>
+                    
+                    <!-- 메인 예보 -->
+                    <div class="text-center mb-6">
+                        <div class="inline-block bg-gradient-to-r from-purple-400 to-pink-400 text-white rounded-3xl px-8 py-6">
+                            <div class="text-6xl mb-2" id="forecastEmoji">☀️</div>
+                            <h3 class="text-2xl font-bold" id="forecastWeather">맑음</h3>
+                            <p class="mt-2" id="forecastDesc">기분 좋은 하루가 될 거예요!</p>
+                        </div>
+                    </div>
+
+                    <!-- 시간대별 예보 -->
+                    <div class="mb-6">
+                        <h3 class="font-bold text-lg mb-3 text-gray-800">⏰ 시간대별 예보</h3>
+                        <div class="grid grid-cols-4 gap-3">
+                            <div class="weather-forecast-item">
+                                <p class="text-sm text-gray-600">아침</p>
+                                <div class="text-2xl my-2" id="morningForecast">☀️</div>
+                                <p class="text-xs" id="morningDesc">상쾌한 시작</p>
+                            </div>
+                            <div class="weather-forecast-item">
+                                <p class="text-sm text-gray-600">점심</p>
+                                <div class="text-2xl my-2" id="noonForecast">⛅</div>
+                                <p class="text-xs" id="noonDesc">평온한 시간</p>
+                            </div>
+                            <div class="weather-forecast-item">
+                                <p class="text-sm text-gray-600">저녁</p>
+                                <div class="text-2xl my-2" id="eveningForecast">☀️</div>
+                                <p class="text-xs" id="eveningDesc">즐거운 마무리</p>
+                            </div>
+                            <div class="weather-forecast-item">
+                                <p class="text-sm text-gray-600">밤</p>
+                                <div class="text-2xl my-2" id="nightForecast">🌙</div>
+                                <p class="text-xs" id="nightDesc">편안한 휴식</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 조언 -->
+                    <div class="advice-card">
+                        <h3 class="font-bold text-lg mb-3">💡 감정 관리 팁</h3>
+                        <ul class="space-y-2" id="adviceList">
+                            <li>✨ 긍정적인 마음으로 하루를 시작해보세요</li>
+                            <li>🌈 예상치 못한 좋은 일이 생길 수 있어요</li>
+                            <li>💪 자신감을 가지고 도전해보세요</li>
+                        </ul>
+                    </div>
+
+                    <!-- 예보 정확도 -->
+                    <div class="mt-6">
+                        <h3 class="font-bold text-lg mb-3 text-gray-800">🎯 예보 신뢰도</h3>
+                        <div class="accuracy-meter">
+                            <div class="accuracy-fill" id="accuracyBar" style="width: 0%">
+                                <span id="accuracyText">0%</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">* 더 많은 정보를 입력할수록 정확도가 높아져요!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 주간 예보 탭 -->
+        <div id="weeklyContent" class="tab-content hidden">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📅 이번 주 감정 예보</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-7 gap-4" id="weeklyForecast">
+                    <!-- 요일별 예보가 동적으로 생성됨 -->
+                </div>
+
+                <!-- 주간 그래프 -->
+                <div class="mt-8 bg-white rounded-2xl p-6">
+                    <h3 class="font-bold text-lg mb-4">📈 주간 감정 변화 예측</h3>
+                    <canvas id="weeklyChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- 주간 이벤트 -->
+                <div class="mt-6">
+                    <h3 class="font-bold text-lg mb-3 text-gray-800">📌 이번 주 주요 일정</h3>
+                    <div class="space-y-2">
+                        <input type="text" id="mondayEvent" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200" placeholder="월요일:">
+                        <input type="text" id="tuesdayEvent" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200" placeholder="화요일:">
+                        <input type="text" id="wednesdayEvent" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200" placeholder="수요일:">
+                        <input type="text" id="thursdayEvent" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200" placeholder="목요일:">
+                        <input type="text" id="fridayEvent" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200" placeholder="금요일:">
+                        <input type="text" id="saturdayEvent" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200" placeholder="토요일:">
+                        <input type="text" id="sundayEvent" class="w-full px-4 py-2 rounded-lg border-2 border-purple-200" placeholder="일요일:">
+                    </div>
+                    <button onclick="updateWeeklyForecast()" class="mt-4 w-full px-6 py-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                        🔄 주간 예보 업데이트
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 예보 기록 탭 -->
+        <div id="historyContent" class="tab-content hidden">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📊 나의 예보 기록</h2>
+                
+                <!-- 정확도 통계 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="bg-gradient-to-r from-green-400 to-emerald-400 rounded-2xl p-4 text-white text-center">
+                        <div class="text-3xl mb-1">✅</div>
+                        <div class="text-2xl font-bold" id="correctPredictions">0</div>
+                        <div class="text-sm">정확한 예보</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl p-4 text-white text-center">
+                        <div class="text-3xl mb-1">➖</div>
+                        <div class="text-2xl font-bold" id="partialPredictions">0</div>
+                        <div class="text-sm">부분 정확</div>
+                    </div>
+                    <div class="bg-gradient-to-r from-red-400 to-pink-400 rounded-2xl p-4 text-white text-center">
+                        <div class="text-3xl mb-1">❌</div>
+                        <div class="text-2xl font-bold" id="wrongPredictions">0</div>
+                        <div class="text-sm">틀린 예보</div>
+                    </div>
+                </div>
+
+                <!-- 예보 목록 -->
+                <div id="predictionHistory" class="space-y-4">
+                    <!-- 예보 기록이 여기에 표시됨 -->
+                </div>
+
+                <!-- 피드백 섹션 -->
+                <div class="mt-8 bg-purple-50 rounded-2xl p-6">
+                    <h3 class="font-bold text-lg mb-3 text-gray-800">📝 오늘의 예보는 맞았나요?</h3>
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-2">어제 예측한 오늘의 감정:</p>
+                        <div class="text-center bg-white rounded-xl p-4">
+                            <div class="text-4xl" id="yesterdayPrediction">❓</div>
+                            <p class="text-sm text-gray-600 mt-2">예보가 없어요</p>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-2">실제 오늘의 감정은?</p>
+                        <div class="flex justify-center gap-2">
+                            <button onclick="ratePrediction(1)" class="text-3xl hover:scale-125 transition">😢</button>
+                            <button onclick="ratePrediction(2)" class="text-3xl hover:scale-125 transition">😟</button>
+                            <button onclick="ratePrediction(3)" class="text-3xl hover:scale-125 transition">😐</button>
+                            <button onclick="ratePrediction(4)" class="text-3xl hover:scale-125 transition">😊</button>
+                            <button onclick="ratePrediction(5)" class="text-3xl hover:scale-125 transition">😄</button>
+                        </div>
+                    </div>
+                    <button onclick="saveFeedback()" class="w-full px-6 py-3 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                        💾 피드백 저장
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 감정 팁 탭 -->
+        <div id="tipsContent" class="tab-content hidden">
+            <div class="glass-effect rounded-3xl p-8">
+                <h2 class="title-font text-2xl text-center mb-6 text-gray-800">💡 감정 관리 꿀팁</h2>
+                
+                <!-- 팁 카테고리 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- 긍정 감정 유지하기 -->
+                    <div class="forecast-card bg-gradient-to-r from-yellow-100 to-orange-100 rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-3 text-orange-700">☀️ 긍정 감정 유지하기</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>✅ 아침에 감사한 3가지 생각하기</li>
+                            <li>✅ 좋아하는 음악 듣기</li>
+                            <li>✅ 친구와 즐거운 대화하기</li>
+                            <li>✅ 운동이나 산책하기</li>
+                            <li>✅ 맛있는 음식 먹기</li>
+                        </ul>
+                    </div>
+
+                    <!-- 부정 감정 다루기 -->
+                    <div class="forecast-card bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-3 text-purple-700">🌧️ 부정 감정 다루기</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>💙 깊게 숨쉬기 (4초 들이쉬고 4초 내쉬기)</li>
+                            <li>💙 감정을 일기에 적어보기</li>
+                            <li>💙 믿을 수 있는 사람과 대화하기</li>
+                            <li>💙 좋아하는 활동하기</li>
+                            <li>💙 충분한 휴식 취하기</li>
+                        </ul>
+                    </div>
+
+                    <!-- 스트레스 해소법 -->
+                    <div class="forecast-card bg-gradient-to-r from-green-100 to-teal-100 rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-3 text-green-700">💚 스트레스 해소법</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>🎨 그림 그리기나 색칠하기</li>
+                            <li>🎵 노래 부르기</li>
+                            <li>🧘 명상이나 요가</li>
+                            <li>🎮 적당한 게임 시간</li>
+                            <li>📚 좋아하는 책 읽기</li>
+                        </ul>
+                    </div>
+
+                    <!-- 좋은 하루 만들기 -->
+                    <div class="forecast-card bg-gradient-to-r from-pink-100 to-red-100 rounded-2xl p-6">
+                        <h3 class="font-bold text-lg mb-3 text-pink-700">🌈 좋은 하루 만들기</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>🌟 작은 목표 세우고 달성하기</li>
+                            <li>🌟 다른 사람 도와주기</li>
+                            <li>🌟 새로운 것 시도해보기</li>
+                            <li>🌟 자신에게 칭찬하기</li>
+                            <li>🌟 하루의 좋은 점 찾기</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 감정 응급처치 -->
+                <div class="mt-8 advice-card">
+                    <h3 class="font-bold text-xl mb-4">🚨 감정 응급처치</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-xl p-4">
+                            <h4 class="font-bold text-red-600 mb-2">화날 때</h4>
+                            <p class="text-sm">1부터 10까지 천천히 세기</p>
+                            <p class="text-sm">차가운 물 마시기</p>
+                            <p class="text-sm">조용한 곳으로 이동</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-4">
+                            <h4 class="font-bold text-blue-600 mb-2">슬플 때</h4>
+                            <p class="text-sm">눈물 참지 말고 울기</p>
+                            <p class="text-sm">따뜻한 차 마시기</p>
+                            <p class="text-sm">포근한 이불 덮기</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-4">
+                            <h4 class="font-bold text-purple-600 mb-2">불안할 때</h4>
+                            <p class="text-sm">5-4-3-2-1 감각 찾기</p>
+                            <p class="text-sm">안전한 장소 상상</p>
+                            <p class="text-sm">믿는 사람에게 연락</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let selectedFactors = [];
+        let todayMood = '';
+        let predictions = JSON.parse(localStorage.getItem('emotionPredictions') || '[]');
+        let weeklyChart = null;
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            setupWeeklyChart();
+            loadWeeklyForecast();
+            loadPredictionHistory();
+            updateAccuracy();
+        });
+
+        // 탭 전환
+        function showTab(tab) {
+            // 모든 탭 컨텐츠 숨기기
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // 모든 탭 버튼 스타일 초기화
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-500', 'text-white');
+                btn.classList.add('hover:bg-purple-100');
+            });
+            
+            // 선택된 탭 표시
+            document.getElementById(tab + 'Content').classList.remove('hidden');
+            document.getElementById(tab + 'Tab').classList.add('bg-purple-500', 'text-white');
+            document.getElementById(tab + 'Tab').classList.remove('hover:bg-purple-100');
+        }
+
+        // 요인 토글
+        function toggleFactor(element, factor) {
+            element.classList.toggle('selected');
+            
+            if (element.classList.contains('selected')) {
+                selectedFactors.push(factor);
+            } else {
+                selectedFactors = selectedFactors.filter(f => f !== factor);
+            }
+        }
+
+        // 오늘 기분 선택
+        function selectTodayMood(mood) {
+            todayMood = mood;
+            
+            // 모든 버튼 초기화
+            document.querySelectorAll('.weather-forecast-item').forEach(item => {
+                item.style.background = 'white';
+            });
+            
+            // 선택된 버튼 하이라이트
+            event.target.closest('.weather-forecast-item').style.background = 
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            event.target.closest('.weather-forecast-item').style.color = 'white';
+        }
+
+        // 예보 생성
+        function generateForecast() {
+            if (!todayMood) {
+                alert('오늘의 기분을 선택해주세요! 😊');
+                return;
+            }
+            
+            const expectation = document.getElementById('expectationRange').value;
+            
+            // 예보 알고리즘
+            let forecastScore = 50;
+            
+            // 오늘 기분 영향 (30%)
+            const moodScores = {
+                'very-bad': -20,
+                'bad': -10,
+                'normal': 0,
+                'good': 10,
+                'very-good': 20
+            };
+            forecastScore += moodScores[todayMood];
+            
+            // 기대감 영향 (30%)
+            forecastScore += (expectation - 50) * 0.3;
+            
+            // 일정 영향 (40%)
+            const positiveFactors = ['play', 'friend', 'family', 'hobby', 'rest', 'trip'];
+            const negativeFactors = ['test', 'school'];
+            
+            selectedFactors.forEach(factor => {
+                if (positiveFactors.includes(factor)) {
+                    forecastScore += 5;
+                } else if (negativeFactors.includes(factor)) {
+                    forecastScore -= 5;
+                }
+            });
+            
+            // 점수 제한
+            forecastScore = Math.max(0, Math.min(100, forecastScore));
+            
+            // 예보 결과 생성
+            let weather, emoji, desc;
+            if (forecastScore >= 80) {
+                weather = '맑음';
+                emoji = '☀️';
+                desc = '아주 기분 좋은 하루가 될 거예요!';
+            } else if (forecastScore >= 60) {
+                weather = '구름 조금';
+                emoji = '⛅';
+                desc = '대체로 좋은 하루가 될 거예요!';
+            } else if (forecastScore >= 40) {
+                weather = '흐림';
+                emoji = '☁️';
+                desc = '평범한 하루가 될 거예요';
+            } else if (forecastScore >= 20) {
+                weather = '비';
+                emoji = '🌧️';
+                desc = '조금 힘든 하루가 될 수 있어요';
+            } else {
+                weather = '폭풍';
+                emoji = '⛈️';
+                desc = '힘든 하루지만 극복할 수 있어요!';
+            }
+            
+            // 결과 표시
+            document.getElementById('crystalEmoji').textContent = emoji;
+            document.getElementById('forecastEmoji').textContent = emoji;
+            document.getElementById('forecastWeather').textContent = weather;
+            document.getElementById('forecastDesc').textContent = desc;
+            
+            // 시간대별 예보
+            generateTimeForecasts(forecastScore);
+            
+            // 조언 생성
+            generateAdvice(forecastScore);
+            
+            // 정확도 계산
+            const accuracy = calculateAccuracy();
+            document.getElementById('accuracyBar').style.width = accuracy + '%';
+            document.getElementById('accuracyText').textContent = accuracy + '%';
+            
+            // 결과 표시
+            document.getElementById('forecastResult').classList.remove('hidden');
+            
+            // 예보 저장
+            savePrediction(weather, emoji, forecastScore);
+            
+            // 애니메이션
+            createMagicEffect();
+        }
+
+        // 시간대별 예보 생성
+        function generateTimeForecasts(baseScore) {
+            const variations = [-10, -5, 5, 0];
+            const times = ['morning', 'noon', 'evening', 'night'];
+            const descs = [
+                ['힘든 시작', '천천히 시작', '보통 시작', '좋은 시작', '상쾌한 시작'],
+                ['어려운 시간', '조금 힘듦', '평온한 시간', '즐거운 시간', '활기찬 시간'],
+                ['피곤한 마무리', '지친 저녁', '평범한 저녁', '좋은 마무리', '즐거운 마무리'],
+                ['불안한 밤', '걱정스러운 밤', '조용한 밤', '편안한 휴식', '달콤한 꿈']
+            ];
+            
+            times.forEach((time, index) => {
+                const score = Math.max(0, Math.min(100, baseScore + variations[index]));
+                const emoji = getWeatherEmoji(score);
+                const descIndex = Math.floor(score / 20);
+                
+                document.getElementById(time + 'Forecast').textContent = emoji;
+                document.getElementById(time + 'Desc').textContent = descs[index][descIndex];
+            });
+        }
+
+        // 날씨 이모지 가져오기
+        function getWeatherEmoji(score) {
+            if (score >= 80) return '☀️';
+            if (score >= 60) return '⛅';
+            if (score >= 40) return '☁️';
+            if (score >= 20) return '🌧️';
+            return '⛈️';
+        }
+
+        // 조언 생성
+        function generateAdvice(score) {
+            const adviceList = document.getElementById('adviceList');
+            let advice = [];
+            
+            if (score >= 60) {
+                advice = [
+                    '✨ 내일은 좋은 일이 많을 거예요! 긍정적인 마음을 유지하세요',
+                    '🌈 좋은 에너지를 다른 사람과 나누면 더 행복해질 거예요',
+                    '💪 자신감을 가지고 새로운 도전을 해보세요'
+                ];
+            } else if (score >= 40) {
+                advice = [
+                    '🌱 평범한 하루도 특별하게 만들 수 있어요',
+                    '☕ 좋아하는 것을 하나 준비해두면 기분이 나아질 거예요',
+                    '🎵 좋아하는 음악을 들으며 하루를 시작해보세요'
+                ];
+            } else {
+                advice = [
+                    '💙 힘든 날이지만 당신은 충분히 극복할 수 있어요',
+                    '🤗 도움이 필요하면 주변 사람에게 말해보세요',
+                    '🌟 작은 것이라도 감사한 마음을 가져보세요'
+                ];
+            }
+            
+            adviceList.innerHTML = advice.map(a => `<li>${a}</li>`).join('');
+        }
+
+        // 정확도 계산
+        function calculateAccuracy() {
+            let accuracy = 30; // 기본 정확도
+            
+            if (todayMood) accuracy += 20;
+            if (selectedFactors.length > 0) accuracy += selectedFactors.length * 5;
+            
+            const expectation = document.getElementById('expectationRange').value;
+            if (expectation !== '50') accuracy += 10;
+            
+            // 과거 예보 정확도 반영
+            const correctRate = getHistoricalAccuracy();
+            accuracy = Math.min(95, accuracy + correctRate * 0.2);
+            
+            return Math.round(accuracy);
+        }
+
+        // 과거 정확도 계산
+        function getHistoricalAccuracy() {
+            if (predictions.length === 0) return 50;
+            
+            const correct = predictions.filter(p => p.feedback === 'correct').length;
+            const partial = predictions.filter(p => p.feedback === 'partial').length;
+            const total = predictions.filter(p => p.feedback).length;
+            
+            if (total === 0) return 50;
+            
+            return Math.round((correct * 100 + partial * 50) / total);
+        }
+
+        // 예보 저장
+        function savePrediction(weather, emoji, score) {
+            const prediction = {
+                id: Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                targetDate: getTomorrowDate(),
+                weather: weather,
+                emoji: emoji,
+                score: score,
+                factors: [...selectedFactors],
+                todayMood: todayMood,
+                expectation: document.getElementById('expectationRange').value,
+                feedback: null
+            };
+            
+            predictions.push(prediction);
+            localStorage.setItem('emotionPredictions', JSON.stringify(predictions));
+        }
+
+        // 내일 날짜 가져오기
+        function getTomorrowDate() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return tomorrow.toISOString().split('T')[0];
+        }
+
+        // 주간 차트 설정
+        function setupWeeklyChart() {
+            const ctx = document.getElementById('weeklyChart');
+            if (!ctx) return;
+            
+            weeklyChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['월', '화', '수', '목', '금', '토', '일'],
+                    datasets: [{
+                        label: '감정 예보',
+                        data: [50, 60, 55, 70, 80, 85, 75],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value >= 80) return '☀️';
+                                    if (value >= 60) return '⛅';
+                                    if (value >= 40) return '☁️';
+                                    if (value >= 20) return '🌧️';
+                                    return '⛈️';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // 주간 예보 로드
+        function loadWeeklyForecast() {
+            const days = ['월', '화', '수', '목', '금', '토', '일'];
+            const container = document.getElementById('weeklyForecast');
+            
+            container.innerHTML = days.map((day, index) => {
+                const score = 40 + Math.random() * 40; // 임시 랜덤 점수
+                const emoji = getWeatherEmoji(score);
+                
+                return `
+                    <div class="weather-forecast-item">
+                        <p class="font-bold text-gray-700">${day}</p>
+                        <div class="text-3xl my-2">${emoji}</div>
+                        <p class="text-xs text-gray-600">예보 대기</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 주간 예보 업데이트
+        function updateWeeklyForecast() {
+            const events = [
+                document.getElementById('mondayEvent').value,
+                document.getElementById('tuesdayEvent').value,
+                document.getElementById('wednesdayEvent').value,
+                document.getElementById('thursdayEvent').value,
+                document.getElementById('fridayEvent').value,
+                document.getElementById('saturdayEvent').value,
+                document.getElementById('sundayEvent').value
+            ];
+            
+            const scores = events.map(event => {
+                let score = 50;
+                if (event.includes('시험') || event.includes('발표')) score -= 20;
+                if (event.includes('놀이') || event.includes('친구')) score += 20;
+                if (event.includes('휴식') || event.includes('여행')) score += 15;
+                return Math.max(0, Math.min(100, score + Math.random() * 20));
+            });
+            
+            // 차트 업데이트
+            if (weeklyChart) {
+                weeklyChart.data.datasets[0].data = scores;
+                weeklyChart.update();
+            }
+            
+            // 카드 업데이트
+            loadWeeklyForecast();
+            
+            alert('주간 예보가 업데이트되었어요! 📅');
+        }
+
+        // 예보 기록 로드
+        function loadPredictionHistory() {
+            const container = document.getElementById('predictionHistory');
+            const recent = predictions.slice(-5).reverse();
+            
+            if (recent.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500">아직 예보 기록이 없어요</p>';
+            } else {
+                container.innerHTML = recent.map(pred => {
+                    const feedbackIcon = pred.feedback === 'correct' ? '✅' : 
+                                        pred.feedback === 'partial' ? '➖' : 
+                                        pred.feedback === 'wrong' ? '❌' : '❓';
+                    
+                    return `
+                        <div class="forecast-card bg-white rounded-2xl p-6">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="text-sm text-gray-500">${pred.date} → ${pred.targetDate}</p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="text-3xl">${pred.emoji}</span>
+                                        <span class="font-bold">${pred.weather}</span>
+                                    </div>
+                                </div>
+                                <div class="text-2xl">${feedbackIcon}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // 정확도 업데이트
+        function updateAccuracy() {
+            const accuracy = getHistoricalAccuracy();
+            document.getElementById('accuracyRate').textContent = accuracy;
+            
+            // 통계 업데이트
+            const correct = predictions.filter(p => p.feedback === 'correct').length;
+            const partial = predictions.filter(p => p.feedback === 'partial').length;
+            const wrong = predictions.filter(p => p.feedback === 'wrong').length;
+            
+            document.getElementById('correctPredictions').textContent = correct;
+            document.getElementById('partialPredictions').textContent = partial;
+            document.getElementById('wrongPredictions').textContent = wrong;
+        }
+
+        // 예보 평가
+        function ratePrediction(rating) {
+            // 모든 버튼 초기화
+            document.querySelectorAll('button[onclick^="ratePrediction"]').forEach(btn => {
+                btn.style.transform = 'scale(1)';
+            });
+            
+            // 선택된 버튼 강조
+            event.target.style.transform = 'scale(1.5)';
+            
+            // 평가 저장
+            window.currentRating = rating;
+        }
+
+        // 피드백 저장
+        function saveFeedback() {
+            if (!window.currentRating) {
+                alert('실제 감정을 선택해주세요! 😊');
+                return;
+            }
+            
+            // 어제 예보 찾기
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            const prediction = predictions.find(p => 
+                p.date === yesterdayStr && p.targetDate === new Date().toISOString().split('T')[0]
+            );
+            
+            if (prediction) {
+                // 정확도 계산
+                const scoreDiff = Math.abs(prediction.score - (window.currentRating * 20));
+                if (scoreDiff <= 20) {
+                    prediction.feedback = 'correct';
+                } else if (scoreDiff <= 40) {
+                    prediction.feedback = 'partial';
+                } else {
+                    prediction.feedback = 'wrong';
+                }
+                
+                localStorage.setItem('emotionPredictions', JSON.stringify(predictions));
+                
+                alert('피드백이 저장되었어요! 예보 정확도가 개선될 거예요 🎯');
+                
+                // 기록 다시 로드
+                loadPredictionHistory();
+                updateAccuracy();
+            } else {
+                alert('어제 예보를 찾을 수 없어요 😅');
+            }
+            
+            window.currentRating = null;
+        }
+
+        // 마법 효과
+        function createMagicEffect() {
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c'];
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'magic-sparkle';
+                    sparkle.style.left = Math.random() * 100 + '%';
+                    sparkle.style.top = Math.random() * 100 + '%';
+                    sparkle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    sparkle.style.animationDelay = Math.random() * 2 + 's';
+                    document.body.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 2000);
+                }, i * 100);
+            }
+        }
+    </script>
+</body>
+</html>
