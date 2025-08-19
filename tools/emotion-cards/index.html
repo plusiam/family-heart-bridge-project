@@ -952,117 +952,212 @@
             reader.readAsText(file);
         }
 
-        // 시각적 리포트 생성
+        // 개선된 시각적 리포트 생성 함수
         function generateVisualReport() {
             const canvas = document.createElement('canvas');
             canvas.width = 1200;
             canvas.height = 1600;
             const ctx = canvas.getContext('2d');
             
-            // 배경 그라데이션
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            // 1. 배경을 흰색으로 설정 (가독성 향상)
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 2. 상단 헤더 배경
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
             gradient.addColorStop(0, '#667eea');
             gradient.addColorStop(1, '#764ba2');
             ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, canvas.width, 300);
             
-            // 흰색 카드 배경
+            // 3. 제목 (시스템 폰트 사용)
+            ctx.font = 'bold 48px Arial, sans-serif';
             ctx.fillStyle = 'white';
-            ctx.roundRect(50, 50, 1100, 1500, 30);
-            ctx.fill();
-            
-            // 제목
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 60px Noto Sans KR';
             ctx.textAlign = 'center';
-            ctx.fillText('🌈 나의 감정 카드 학습 리포트', 600, 150);
+            ctx.fillText('🌈 나의 감정 카드 학습 리포트', 600, 100);
             
-            // 학생 정보
+            // 4. 사용자 정보
             const userName = userProfile ? userProfile.name : '익명';
             const userAvatar = userProfile ? userProfile.avatar : '🦁';
             const userClass = userProfile ? userProfile.className : '';
             
-            ctx.font = '40px Noto Sans KR';
-            ctx.fillText(`${userAvatar} ${userName}`, 600, 230);
+            ctx.font = '36px Arial, sans-serif';
+            ctx.fillText(`${userAvatar} ${userName}`, 600, 180);
+            
             if (userClass) {
-                ctx.font = '30px Noto Sans KR';
-                ctx.fillStyle = '#666';
-                ctx.fillText(userClass, 600, 280);
+                ctx.font = '24px Arial, sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillText(userClass, 600, 230);
             }
             
-            // 통계 카드들
+            // 5. 날짜
+            ctx.font = '20px Arial, sans-serif';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillText(new Date().toLocaleDateString('ko-KR'), 600, 270);
+            
+            // 6. 메인 콘텐츠 영역
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(50, 350, 1100, 1200);
+            
+            // 7. 통계 제목
+            ctx.font = 'bold 36px Arial, sans-serif';
+            ctx.fillStyle = '#333333';
+            ctx.textAlign = 'left';
+            ctx.fillText('📊 학습 통계', 100, 420);
+            
+            // 8. 통계 카드들
             const stats = [
-                { label: '수집한 카드', value: collectedCards.length, icon: '📚', color: '#9333ea' },
-                { label: '획득 포인트', value: totalPoints, icon: '🏆', color: '#3b82f6' },
-                { label: '만든 카드', value: customCards.length, icon: '✨', color: '#f59e0b' },
-                { label: '완성도', value: Math.round((collectedCards.length / emotionCards.length) * 100) + '%', icon: '🎯', color: '#10b981' }
+                { 
+                    label: '수집한 카드', 
+                    value: collectedCards.length + '개', 
+                    icon: '📚', 
+                    color: '#9333ea',
+                    x: 100,
+                    y: 460
+                },
+                { 
+                    label: '획득 포인트', 
+                    value: totalPoints + '점', 
+                    icon: '🏆', 
+                    color: '#3b82f6',
+                    x: 400,
+                    y: 460
+                },
+                { 
+                    label: '만든 카드', 
+                    value: customCards.length + '개', 
+                    icon: '✨', 
+                    color: '#f59e0b',
+                    x: 700,
+                    y: 460
+                },
+                { 
+                    label: '완성도', 
+                    value: Math.round((collectedCards.length / emotionCards.length) * 100) + '%', 
+                    icon: '🎯', 
+                    color: '#10b981',
+                    x: 1000,
+                    y: 460
+                }
             ];
             
-            let x = 150;
-            let y = 350;
-            stats.forEach((stat, index) => {
-                // 카드 배경
+            // 통계 박스 그리기
+            stats.forEach(stat => {
+                // 배경 박스
                 ctx.fillStyle = stat.color;
-                ctx.roundRect(x, y, 220, 150, 20);
-                ctx.fill();
+                ctx.fillRect(stat.x - 50, stat.y, 250, 150);
                 
-                // 아이콘과 텍스트
+                // 흰색 내부 박스
                 ctx.fillStyle = 'white';
-                ctx.font = '40px Noto Sans KR';
+                ctx.fillRect(stat.x - 45, stat.y + 5, 240, 140);
+                
+                // 아이콘
+                ctx.font = '48px Arial';
+                ctx.fillStyle = stat.color;
                 ctx.textAlign = 'center';
-                ctx.fillText(stat.icon, x + 110, y + 50);
+                ctx.fillText(stat.icon, stat.x + 75, stat.y + 60);
                 
-                ctx.font = 'bold 36px Noto Sans KR';
-                ctx.fillText(stat.value, x + 110, y + 95);
+                // 값
+                ctx.font = 'bold 32px Arial, sans-serif';
+                ctx.fillStyle = '#333333';
+                ctx.fillText(stat.value, stat.x + 75, stat.y + 105);
                 
-                ctx.font = '20px Noto Sans KR';
-                ctx.fillText(stat.label, x + 110, y + 125);
-                
-                x += 250;
-                if (index === 1) {
-                    x = 150;
-                    y += 180;
-                }
+                // 라벨
+                ctx.font = '18px Arial, sans-serif';
+                ctx.fillStyle = '#666666';
+                ctx.fillText(stat.label, stat.x + 75, stat.y + 135);
             });
             
-            // 수집한 카드 갤러리
-            ctx.fillStyle = '#333';
-            ctx.font = 'bold 36px Noto Sans KR';
+            // 9. 수집한 카드 섹션
+            ctx.font = 'bold 32px Arial, sans-serif';
+            ctx.fillStyle = '#333333';
             ctx.textAlign = 'left';
-            ctx.fillText('📂 수집한 감정 카드', 100, 750);
+            ctx.fillText('📂 수집한 감정 카드', 100, 700);
             
-            // 카드 미니 갤러리
-            x = 100;
-            y = 800;
-            const displayCards = collectedCards.slice(0, 20);
-            displayCards.forEach((cardId, index) => {
-                const card = emotionCards.find(c => c.id === cardId);
-                if (card) {
-                    // 카드 배경
-                    ctx.fillStyle = card.color;
-                    ctx.roundRect(x, y, 90, 90, 15);
-                    ctx.fill();
+            // 10. 카드 미니 갤러리
+            let cardX = 100;
+            let cardY = 750;
+            const maxCards = Math.min(collectedCards.length, 15);
+            
+            if (maxCards === 0) {
+                ctx.font = '24px Arial, sans-serif';
+                ctx.fillStyle = '#999999';
+                ctx.textAlign = 'center';
+                ctx.fillText('아직 수집한 카드가 없습니다', 600, 850);
+            } else {
+                for (let i = 0; i < maxCards; i++) {
+                    const cardId = collectedCards[i];
+                    const card = emotionCards.find(c => c.id === cardId);
                     
-                    // 이모지
-                    ctx.font = '36px Noto Sans KR';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(card.emoji, x + 45, y + 55);
-                    
-                    x += 100;
-                    if ((index + 1) % 10 === 0) {
-                        x = 100;
-                        y += 100;
+                    if (card) {
+                        // 카드 배경
+                        ctx.fillStyle = card.color || '#e5e7eb';
+                        ctx.fillRect(cardX, cardY, 100, 100);
+                        
+                        // 카드 테두리
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(cardX, cardY, 100, 100);
+                        
+                        // 이모지
+                        ctx.font = '40px Arial';
+                        ctx.fillStyle = 'white';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(card.emoji, cardX + 50, cardY + 50);
+                        
+                        // 카드 이름
+                        ctx.font = 'bold 14px Arial, sans-serif';
+                        ctx.fillText(card.name, cardX + 50, cardY + 80);
+                        
+                        cardX += 110;
+                        if ((i + 1) % 9 === 0) {
+                            cardX = 100;
+                            cardY += 110;
+                        }
                     }
                 }
-            });
+            }
             
-            // 생성 날짜
-            ctx.fillStyle = '#666';
-            ctx.font = '20px Noto Sans KR';
+            // 11. 업적 섹션
+            ctx.font = 'bold 32px Arial, sans-serif';
+            ctx.fillStyle = '#333333';
+            ctx.textAlign = 'left';
+            ctx.fillText('🏅 달성한 업적', 100, 1100);
+            
+            const achievements = getAchievements();
+            let achievementY = 1150;
+            
+            if (achievements.length === 0) {
+                ctx.font = '24px Arial, sans-serif';
+                ctx.fillStyle = '#999999';
+                ctx.textAlign = 'center';
+                ctx.fillText('업적을 달성하려면 더 많은 카드를 수집해보세요!', 600, achievementY);
+            } else {
+                achievements.forEach((achievement, index) => {
+                    ctx.font = '24px Arial, sans-serif';
+                    ctx.fillStyle = '#666666';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`${achievement.icon} ${achievement.name}`, 100 + (index % 2) * 500, achievementY);
+                    
+                    if (index % 2 === 1) {
+                        achievementY += 40;
+                    }
+                });
+            }
+            
+            // 12. 하단 정보
+            ctx.fillStyle = '#e5e7eb';
+            ctx.fillRect(0, 1450, canvas.width, 150);
+            
+            ctx.font = '20px Arial, sans-serif';
+            ctx.fillStyle = '#666666';
             ctx.textAlign = 'center';
-            ctx.fillText(`생성일: ${new Date().toLocaleDateString('ko-KR')}`, 600, 1450);
+            ctx.fillText('생성일: ' + new Date().toLocaleDateString('ko-KR'), 600, 1500);
+            ctx.fillText('Family Heart Bridge Project', 600, 1530);
+            ctx.font = '16px Arial, sans-serif';
+            ctx.fillText('© 2025 디지털 감정 카드 학습 시스템', 600, 1560);
             
-            // 이미지로 다운로드
+            // 13. 이미지로 변환 및 다운로드
             canvas.toBlob(blob => {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -1073,24 +1168,7 @@
                 URL.revokeObjectURL(url);
                 
                 showModal('🖼️', '리포트 생성 완료!', '이미지가 다운로드되었습니다.');
-            });
-        }
-
-        // Canvas roundRect 폴리필
-        if (!CanvasRenderingContext2D.prototype.roundRect) {
-            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-                this.beginPath();
-                this.moveTo(x + radius, y);
-                this.lineTo(x + width - radius, y);
-                this.quadraticCurveTo(x + width, y, x + width, y + radius);
-                this.lineTo(x + width, y + height - radius);
-                this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-                this.lineTo(x + radius, y + height);
-                this.quadraticCurveTo(x, y + height, x, y + height - radius);
-                this.lineTo(x, y + radius);
-                this.quadraticCurveTo(x, y, x + radius, y);
-                this.closePath();
-            };
+            }, 'image/png');
         }
 
         // 즐겨찾는 카테고리 찾기
