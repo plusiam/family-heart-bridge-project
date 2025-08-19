@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 마음 브릿지 포트폴리오 - 나의 성장 기록</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .title-font {
+            font-family: 'Jua', sans-serif;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .portfolio-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .portfolio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .portfolio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .stage-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 2px;
+        }
+        
+        .stage-1 {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #4338ca;
+        }
+        
+        .stage-2 {
+            background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+            color: #be185d;
+        }
+        
+        .stage-3 {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+        
+        .achievement-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .achievement-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .achievement-locked {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            opacity: 0.5;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: -30px;
+            width: 2px;
+            background: #e5e7eb;
+        }
+        
+        .timeline-item:last-child::before {
+            display: none;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #667eea;
+        }
+        
+        .growth-chart {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .reflection-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .tool-completion {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .tool-completion.completed {
+            background: #d1fae5;
+            border-color: #10b981;
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        .portfolio-nav {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .certificate {
+            background: white;
+            border: 5px solid gold;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        
+        .certificate::before {
+            content: '🏆';
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 60px;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+    <!-- 헤더 -->
+    <header class="glass-effect shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span class="text-4xl float-animation">📚</span>
+                    <div>
+                        <h1 class="title-font text-2xl md:text-3xl text-gray-800">마음 브릿지 포트폴리오</h1>
+                        <p class="text-sm text-gray-600">나의 감정 성장 기록</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="bg-purple-100 px-4 py-2 rounded-full">
+                        <span class="text-purple-700 font-bold">
+                            🌟 레벨 <span id="userLevel">1</span>
+                        </span>
+                    </div>
+                    <button onclick="window.location.href='../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                        🏠 메인으로
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- 프로필 카드 -->
+        <div class="portfolio-card p-6 mb-8">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+                <div class="text-center md:text-left">
+                    <div class="text-6xl mb-4">🌈</div>
+                    <input type="text" id="userName" placeholder="이름을 입력하세요" 
+                           class="text-2xl font-bold bg-transparent border-b-2 border-purple-300 focus:border-purple-500 outline-none mb-2"
+                           onchange="saveProfile()">
+                    <p class="text-gray-600">감정 탐험가</p>
+                </div>
+                
+                <div class="flex-1">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl mb-1">📝</div>
+                            <div class="font-bold text-lg" id="totalActivities">0</div>
+                            <div class="text-sm text-gray-600">활동 수</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl mb-1">🏆</div>
+                            <div class="font-bold text-lg" id="achievements">0</div>
+                            <div class="text-sm text-gray-600">성취</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl mb-1">📅</div>
+                            <div class="font-bold text-lg" id="activeDays">0</div>
+                            <div class="text-sm text-gray-600">활동일</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl mb-1">💪</div>
+                            <div class="font-bold text-lg" id="growthRate">0%</div>
+                            <div class="text-sm text-gray-600">성장률</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 네비게이션 -->
+        <div class="flex justify-center mb-8">
+            <div class="portfolio-nav">
+                <button onclick="showSection('overview')" class="nav-btn active" id="navOverview">
+                    📊 개요
+                </button>
+                <button onclick="showSection('activities')" class="nav-btn" id="navActivities">
+                    📝 활동 기록
+                </button>
+                <button onclick="showSection('achievements')" class="nav-btn" id="navAchievements">
+                    🏆 성취
+                </button>
+                <button onclick="showSection('reflections')" class="nav-btn" id="navReflections">
+                    💭 성찰
+                </button>
+                <button onclick="showSection('certificate')" class="nav-btn" id="navCertificate">
+                    🎓 수료증
+                </button>
+            </div>
+        </div>
+
+        <!-- 개요 섹션 -->
+        <div id="overviewSection" class="section">
+            <!-- 학습 진행 상황 -->
+            <div class="portfolio-card p-6 mb-6">
+                <h3 class="text-xl font-bold mb-4">📈 나의 학습 여정</h3>
+                
+                <!-- 단계별 진행도 -->
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="stage-badge stage-1">1단계: 나</span>
+                            <span class="text-sm font-bold">80%</span>
+                        </div>
+                        <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full" style="width: 80%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="stage-badge stage-2">2단계: 가족</span>
+                            <span class="text-sm font-bold">60%</span>
+                        </div>
+                        <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-pink-400 to-pink-600 rounded-full" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="stage-badge stage-3">3단계: 공감</span>
+                            <span class="text-sm font-bold">40%</span>
+                        </div>
+                        <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full" style="width: 40%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 감정 성장 그래프 -->
+            <div class="portfolio-card p-6 mb-6">
+                <h3 class="text-xl font-bold mb-4">📊 감정 이해도 성장 그래프</h3>
+                <canvas id="growthChart"></canvas>
+            </div>
+
+            <!-- 최근 활동 -->
+            <div class="portfolio-card p-6">
+                <h3 class="text-xl font-bold mb-4">⏰ 최근 활동</h3>
+                <div class="space-y-3" id="recentActivities">
+                    <!-- 동적으로 생성됨 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 활동 기록 섹션 -->
+        <div id="activitiesSection" class="section hidden">
+            <div class="portfolio-card p-6">
+                <h3 class="text-xl font-bold mb-6">📝 나의 활동 기록</h3>
+                
+                <!-- 도구별 완성도 -->
+                <div class="mb-6">
+                    <h4 class="font-bold mb-3">도구 사용 현황</h4>
+                    <div class="flex flex-wrap" id="toolsStatus">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
+
+                <!-- 타임라인 -->
+                <div class="mb-6">
+                    <h4 class="font-bold mb-4">활동 타임라인</h4>
+                    <div id="timeline">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
+
+                <!-- 활동 추가 -->
+                <div class="bg-purple-50 rounded-xl p-4">
+                    <h4 class="font-bold mb-3">새 활동 기록하기</h4>
+                    <div class="space-y-3">
+                        <select id="activityTool" class="w-full px-3 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-400 outline-none">
+                            <option value="">도구 선택...</option>
+                            <option value="emotion-weather">감정 날씨 체크인</option>
+                            <option value="emotion-diary">감정 날씨 일기</option>
+                            <option value="emotion-cards">디지털 감정 카드</option>
+                            <option value="family-happy">가족 행복 순간</option>
+                            <option value="abc-analyzer">ABC 감정 분석기</option>
+                        </select>
+                        <textarea id="activityNote" rows="3" placeholder="활동 내용을 간단히 적어주세요..."
+                                  class="w-full px-3 py-2 rounded-lg border-2 border-purple-200 focus:border-purple-400 outline-none"></textarea>
+                        <button onclick="addActivity()" class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
+                            ➕ 활동 추가
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 성취 섹션 -->
+        <div id="achievementsSection" class="section hidden">
+            <div class="portfolio-card p-6">
+                <h3 class="text-xl font-bold mb-6">🏆 나의 성취</h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="achievement-card" id="achieve1">
+                        <div class="text-4xl mb-2">🌱</div>
+                        <h4 class="font-bold">첫 걸음</h4>
+                        <p class="text-xs mt-1">첫 활동 완료</p>
+                    </div>
+                    
+                    <div class="achievement-card" id="achieve2">
+                        <div class="text-4xl mb-2">🌤️</div>
+                        <h4 class="font-bold">날씨 관찰자</h4>
+                        <p class="text-xs mt-1">감정 날씨 5회 기록</p>
+                    </div>
+                    
+                    <div class="achievement-card" id="achieve3">
+                        <div class="text-4xl mb-2">👨‍👩‍👧</div>
+                        <h4 class="font-bold">가족 사랑</h4>
+                        <p class="text-xs mt-1">가족 활동 3개 완료</p>
+                    </div>
+                    
+                    <div class="achievement-card" id="achieve4">
+                        <div class="text-4xl mb-2">🧠</div>
+                        <h4 class="font-bold">ABC 마스터</h4>
+                        <p class="text-xs mt-1">ABC 분석 10회</p>
+                    </div>
+                    
+                    <div class="achievement-card achievement-locked" id="achieve5">
+                        <div class="text-4xl mb-2">🎯</div>
+                        <h4 class="font-bold">완벽주의자</h4>
+                        <p class="text-xs mt-1">모든 도구 사용</p>
+                    </div>
+                    
+                    <div class="achievement-card achievement-locked" id="achieve6">
+                        <div class="text-4xl mb-2">📅</div>
+                        <h4 class="font-bold">꾸준함의 힘</h4>
+                        <p class="text-xs mt-1">7일 연속 활동</p>
+                    </div>
+                    
+                    <div class="achievement-card achievement-locked" id="achieve7">
+                        <div class="text-4xl mb-2">💝</div>
+                        <h4 class="font-bold">공감 전문가</h4>
+                        <p class="text-xs mt-1">3단계 완료</p>
+                    </div>
+                    
+                    <div class="achievement-card achievement-locked" id="achieve8">
+                        <div class="text-4xl mb-2">🌟</div>
+                        <h4 class="font-bold">감정 마스터</h4>
+                        <p class="text-xs mt-1">전체 과정 수료</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 성찰 섹션 -->
+        <div id="reflectionsSection" class="section hidden">
+            <div class="portfolio-card p-6">
+                <h3 class="text-xl font-bold mb-6">💭 나의 성찰 일지</h3>
+                
+                <!-- 성찰 입력 -->
+                <div class="reflection-card mb-6">
+                    <h4 class="font-bold mb-3">오늘의 성찰</h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-bold mb-1">오늘 배운 것은?</label>
+                            <textarea id="todayLearning" rows="2" class="w-full px-3 py-2 rounded-lg border-2 border-blue-200 focus:border-blue-400 outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-1">가장 기억에 남는 순간은?</label>
+                            <textarea id="todayMoment" rows="2" class="w-full px-3 py-2 rounded-lg border-2 border-blue-200 focus:border-blue-400 outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-1">내일의 목표는?</label>
+                            <textarea id="tomorrowGoal" rows="2" class="w-full px-3 py-2 rounded-lg border-2 border-blue-200 focus:border-blue-400 outline-none"></textarea>
+                        </div>
+                        <button onclick="saveReflection()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                            💾 성찰 저장
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 이전 성찰 목록 -->
+                <div>
+                    <h4 class="font-bold mb-3">이전 성찰 기록</h4>
+                    <div id="reflectionList" class="space-y-3">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 수료증 섹션 -->
+        <div id="certificateSection" class="section hidden">
+            <div class="certificate" id="certificateCard">
+                <h2 class="title-font text-4xl mb-6">수료증</h2>
+                
+                <div class="mb-8">
+                    <p class="text-lg mb-2">이 증서는</p>
+                    <p class="text-3xl font-bold text-purple-600 mb-2" id="certName">학생 이름</p>
+                    <p class="text-lg">학생이</p>
+                </div>
+                
+                <div class="mb-8">
+                    <p class="text-xl font-bold mb-2">마음으로 잇는 우리 가족</p>
+                    <p class="text-lg">프로젝트를 성실히 수행하고</p>
+                    <p class="text-lg">감정 이해와 공감 능력을</p>
+                    <p class="text-lg">크게 향상시켰음을 증명합니다.</p>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 mb-8">
+                    <div>
+                        <p class="text-sm text-gray-600">완료 활동</p>
+                        <p class="text-2xl font-bold" id="certActivities">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">획득 성취</p>
+                        <p class="text-2xl font-bold" id="certAchievements">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">성장률</p>
+                        <p class="text-2xl font-bold" id="certGrowth">0%</p>
+                    </div>
+                </div>
+                
+                <div class="border-t-2 border-gray-300 pt-6">
+                    <p class="text-sm text-gray-600" id="certDate">2024년 12월</p>
+                    <p class="text-lg font-bold mt-2">한기영 선생님</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-center gap-4 mt-6">
+                <button onclick="downloadCertificate()" class="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition">
+                    📥 다운로드
+                </button>
+                <button onclick="printCertificate()" class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition">
+                    🖨️ 인쇄
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let portfolioData = {
+            userName: '',
+            level: 1,
+            activities: [],
+            achievements: [],
+            reflections: [],
+            stats: {
+                totalActivities: 0,
+                achievementsCount: 0,
+                activeDays: 0,
+                growthRate: 0
+            }
+        };
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPortfolio();
+            setupCharts();
+            updateDisplay();
+        });
+
+        // 포트폴리오 불러오기
+        function loadPortfolio() {
+            const saved = localStorage.getItem('portfolioData');
+            if (saved) {
+                portfolioData = JSON.parse(saved);
+                document.getElementById('userName').value = portfolioData.userName || '';
+            }
+            
+            // 다른 도구들의 데이터 통합
+            integrateToolsData();
+        }
+
+        // 도구 데이터 통합
+        function integrateToolsData() {
+            // 감정 날씨 데이터
+            const weatherData = localStorage.getItem('emotionWeatherHistory');
+            if (weatherData) {
+                const records = JSON.parse(weatherData);
+                records.forEach(record => {
+                    if (!portfolioData.activities.find(a => a.id === `weather-${record.timestamp}`)) {
+                        portfolioData.activities.push({
+                            id: `weather-${record.timestamp}`,
+                            tool: '감정 날씨 체크인',
+                            date: new Date(record.timestamp),
+                            content: `감정 날씨: ${record.weather}`
+                        });
+                    }
+                });
+            }
+            
+            // 다른 도구들도 비슷하게 통합...
+            
+            savePortfolio();
+        }
+
+        // 포트폴리오 저장
+        function savePortfolio() {
+            localStorage.setItem('portfolioData', JSON.stringify(portfolioData));
+            updateDisplay();
+        }
+
+        // 프로필 저장
+        function saveProfile() {
+            portfolioData.userName = document.getElementById('userName').value;
+            savePortfolio();
+            updateCertificate();
+        }
+
+        // 화면 업데이트
+        function updateDisplay() {
+            // 통계 업데이트
+            document.getElementById('userLevel').textContent = portfolioData.level;
+            document.getElementById('totalActivities').textContent = portfolioData.activities.length;
+            document.getElementById('achievements').textContent = portfolioData.achievements.length;
+            document.getElementById('activeDays').textContent = calculateActiveDays();
+            document.getElementById('growthRate').textContent = calculateGrowthRate() + '%';
+            
+            // 최근 활동 표시
+            updateRecentActivities();
+            
+            // 도구 상태 표시
+            updateToolsStatus();
+            
+            // 타임라인 표시
+            updateTimeline();
+            
+            // 성찰 목록 표시
+            updateReflectionList();
+            
+            // 성취 업데이트
+            checkAchievements();
+            
+            // 수료증 업데이트
+            updateCertificate();
+        }
+
+        // 활동일 계산
+        function calculateActiveDays() {
+            const dates = new Set();
+            portfolioData.activities.forEach(activity => {
+                const date = new Date(activity.date).toDateString();
+                dates.add(date);
+            });
+            return dates.size;
+        }
+
+        // 성장률 계산
+        function calculateGrowthRate() {
+            const totalPossible = 16; // 총 도구 수
+            const completed = portfolioData.activities.length;
+            return Math.round((completed / totalPossible) * 100);
+        }
+
+        // 섹션 전환
+        function showSection(section) {
+            // 모든 섹션 숨기기
+            document.querySelectorAll('.section').forEach(s => {
+                s.classList.add('hidden');
+            });
+            
+            // 모든 네비게이션 버튼 비활성화
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 선택된 섹션 표시
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            document.getElementById('nav' + section.charAt(0).toUpperCase() + section.slice(1)).classList.add('active');
+        }
+
+        // 활동 추가
+        function addActivity() {
+            const tool = document.getElementById('activityTool').value;
+            const note = document.getElementById('activityNote').value;
+            
+            if (!tool || !note) {
+                alert('도구와 활동 내용을 모두 입력해주세요!');
+                return;
+            }
+            
+            const activity = {
+                id: Date.now(),
+                tool: tool,
+                date: new Date(),
+                content: note
+            };
+            
+            portfolioData.activities.push(activity);
+            savePortfolio();
+            
+            // 입력 필드 초기화
+            document.getElementById('activityTool').value = '';
+            document.getElementById('activityNote').value = '';
+            
+            alert('활동이 추가되었습니다!');
+        }
+
+        // 성찰 저장
+        function saveReflection() {
+            const learning = document.getElementById('todayLearning').value;
+            const moment = document.getElementById('todayMoment').value;
+            const goal = document.getElementById('tomorrowGoal').value;
+            
+            if (!learning || !moment || !goal) {
+                alert('모든 항목을 입력해주세요!');
+                return;
+            }
+            
+            const reflection = {
+                id: Date.now(),
+                date: new Date(),
+                learning: learning,
+                moment: moment,
+                goal: goal
+            };
+            
+            portfolioData.reflections.push(reflection);
+            savePortfolio();
+            
+            // 입력 필드 초기화
+            document.getElementById('todayLearning').value = '';
+            document.getElementById('todayMoment').value = '';
+            document.getElementById('tomorrowGoal').value = '';
+            
+            alert('성찰이 저장되었습니다!');
+        }
+
+        // 최근 활동 업데이트
+        function updateRecentActivities() {
+            const container = document.getElementById('recentActivities');
+            const recent = portfolioData.activities.slice(-5).reverse();
+            
+            if (recent.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center">아직 활동 기록이 없습니다.</p>';
+            } else {
+                container.innerHTML = recent.map(activity => `
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <span class="text-2xl">📝</span>
+                        <div class="flex-1">
+                            <p class="font-bold">${activity.tool}</p>
+                            <p class="text-sm text-gray-600">${activity.content}</p>
+                        </div>
+                        <span class="text-xs text-gray-500">${new Date(activity.date).toLocaleDateString()}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 도구 상태 업데이트
+        function updateToolsStatus() {
+            const tools = [
+                '감정 날씨 체크인', '감정 날씨 일기', '디지털 감정 카드',
+                '가족 행복 순간', 'ABC 감정 분석기'
+            ];
+            
+            const container = document.getElementById('toolsStatus');
+            container.innerHTML = tools.map(tool => {
+                const used = portfolioData.activities.some(a => a.tool === tool);
+                return `
+                    <div class="tool-completion ${used ? 'completed' : ''}">
+                        ${used ? '✅' : '⭕'} ${tool}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 타임라인 업데이트
+        function updateTimeline() {
+            const container = document.getElementById('timeline');
+            const sorted = [...portfolioData.activities].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            container.innerHTML = sorted.slice(0, 10).map(activity => `
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-white p-3 rounded-lg shadow">
+                        <p class="font-bold">${activity.tool}</p>
+                        <p class="text-sm text-gray-600">${activity.content}</p>
+                        <p class="text-xs text-gray-500 mt-1">${new Date(activity.date).toLocaleString()}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 성찰 목록 업데이트
+        function updateReflectionList() {
+            const container = document.getElementById('reflectionList');
+            const sorted = [...portfolioData.reflections].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            if (sorted.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center">아직 성찰 기록이 없습니다.</p>';
+            } else {
+                container.innerHTML = sorted.slice(0, 5).map(reflection => `
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <p class="text-sm text-gray-500 mb-2">${new Date(reflection.date).toLocaleDateString()}</p>
+                        <div class="space-y-2">
+                            <div>
+                                <span class="font-bold text-sm">배운 것:</span>
+                                <p class="text-sm">${reflection.learning}</p>
+                            </div>
+                            <div>
+                                <span class="font-bold text-sm">기억에 남는 순간:</span>
+                                <p class="text-sm">${reflection.moment}</p>
+                            </div>
+                            <div>
+                                <span class="font-bold text-sm">목표:</span>
+                                <p class="text-sm">${reflection.goal}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 성취 확인
+        function checkAchievements() {
+            // 첫 걸음
+            if (portfolioData.activities.length >= 1) {
+                document.getElementById('achieve1').classList.remove('achievement-locked');
+            }
+            
+            // 날씨 관찰자
+            const weatherCount = portfolioData.activities.filter(a => a.tool.includes('날씨')).length;
+            if (weatherCount >= 5) {
+                document.getElementById('achieve2').classList.remove('achievement-locked');
+            }
+            
+            // 가족 사랑
+            const familyCount = portfolioData.activities.filter(a => a.tool.includes('가족')).length;
+            if (familyCount >= 3) {
+                document.getElementById('achieve3').classList.remove('achievement-locked');
+            }
+            
+            // ABC 마스터
+            const abcCount = portfolioData.activities.filter(a => a.tool.includes('ABC')).length;
+            if (abcCount >= 10) {
+                document.getElementById('achieve4').classList.remove('achievement-locked');
+            }
+        }
+
+        // 수료증 업데이트
+        function updateCertificate() {
+            document.getElementById('certName').textContent = portfolioData.userName || '학생 이름';
+            document.getElementById('certActivities').textContent = portfolioData.activities.length;
+            document.getElementById('certAchievements').textContent = 
+                document.querySelectorAll('.achievement-card:not(.achievement-locked)').length;
+            document.getElementById('certGrowth').textContent = calculateGrowthRate() + '%';
+            document.getElementById('certDate').textContent = new Date().toLocaleDateString('ko-KR');
+        }
+
+        // 차트 설정
+        function setupCharts() {
+            const ctx = document.getElementById('growthChart');
+            if (ctx) {
+                new Chart(ctx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['1주', '2주', '3주', '4주', '5주', '6주'],
+                        datasets: [{
+                            label: '감정 이해도',
+                            data: [20, 35, 45, 60, 75, 85],
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 수료증 다운로드
+        function downloadCertificate() {
+            html2canvas(document.getElementById('certificateCard')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `마음브릿지_수료증_${portfolioData.userName}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        // 수료증 인쇄
+        function printCertificate() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
