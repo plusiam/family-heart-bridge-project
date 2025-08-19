@@ -6,6 +6,10 @@
     <title>📝 감정 날씨 일기 - 하루의 감정 변화 기록하기</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="../../js/portfolio-manager.js"></script>
+    <script src="../../js/diary-manager.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap');
         
@@ -219,11 +223,16 @@
                 opacity: 0;
             }
         }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
     <!-- 헤더 -->
-    <header class="glass-effect shadow-lg sticky top-0 z-40">
+    <header class="glass-effect shadow-lg sticky top-0 z-40 no-print">
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-3">
@@ -239,7 +248,7 @@
                             📚 <span id="totalEntries">0</span>개 일기
                         </span>
                     </div>
-                    <button onclick="window.location.href='../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
+                    <button onclick="window.location.href='../../'" class="px-4 py-2 bg-purple-500 text-white rounded-full hover:bg-purple-600 transition">
                         🏠 메인으로
                     </button>
                 </div>
@@ -249,8 +258,14 @@
 
     <!-- 메인 컨텐츠 -->
     <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 학생 정보 섹션 -->
+        <div id="studentInfoSection"></div>
+        
+        <!-- 데이터 관리 섹션 (자동 삽입됨) -->
+        <div id="dataManagement"></div>
+        
         <!-- 탭 네비게이션 -->
-        <div class="flex justify-center mb-8">
+        <div class="flex justify-center mb-8 no-print">
             <div class="glass-effect rounded-full p-1 inline-flex">
                 <button onclick="showTab('write')" id="writeTab" class="tab-btn px-6 py-2 rounded-full bg-purple-500 text-white transition">
                     ✍️ 일기 쓰기
@@ -269,7 +284,7 @@
 
         <!-- 일기 쓰기 탭 -->
         <div id="writeContent" class="tab-content">
-            <div class="diary-page rounded-3xl p-8">
+            <div class="diary-page rounded-3xl p-8" id="diaryPageContent">
                 <!-- 날짜 선택 -->
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -400,17 +415,20 @@
                 </div>
 
                 <!-- 저장 버튼 -->
-                <div class="text-center">
+                <div class="text-center mb-6">
                     <button onclick="saveDiary()" class="px-12 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl font-bold rounded-full hover:scale-105 transform transition shadow-lg">
                         💾 일기 저장하기
                     </button>
                 </div>
+                
+                <!-- 다운로드 버튼 섹션 -->
+                <div id="downloadSection"></div>
             </div>
         </div>
 
         <!-- 감정 타임라인 탭 -->
         <div id="timelineContent" class="tab-content hidden">
-            <div class="glass-effect rounded-3xl p-8">
+            <div class="glass-effect rounded-3xl p-8" id="timelineMainContent">
                 <h2 class="title-font text-2xl text-center mb-6 text-gray-800">⏰ 오늘의 감정 타임라인</h2>
                 
                 <!-- 날짜 선택 -->
@@ -445,12 +463,19 @@
                     <h3 class="font-bold text-lg mb-4">📈 감정 변화 그래프</h3>
                     <canvas id="emotionChart" width="400" height="200"></canvas>
                 </div>
+                
+                <!-- 타임라인 다운로드 버튼 -->
+                <div class="flex justify-center mt-6 no-print">
+                    <button onclick="downloadTimeline()" class="px-6 py-3 bg-green-500 text-white rounded-xl hover:bg-green-600 transition">
+                        📷 타임라인 이미지로 저장
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- 일기 모음 탭 -->
         <div id="galleryContent" class="tab-content hidden">
-            <div class="glass-effect rounded-3xl p-8">
+            <div class="glass-effect rounded-3xl p-8" id="galleryMainContent">
                 <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📖 나의 감정 일기 모음</h2>
                 
                 <!-- 필터 옵션 -->
@@ -473,7 +498,7 @@
 
         <!-- 감정 분석 탭 -->
         <div id="analysisContent" class="tab-content hidden">
-            <div class="glass-effect rounded-3xl p-8">
+            <div class="glass-effect rounded-3xl p-8" id="analysisMainContent">
                 <h2 class="title-font text-2xl text-center mb-6 text-gray-800">📊 나의 감정 패턴 분석</h2>
                 
                 <!-- 통계 카드 -->
@@ -513,6 +538,13 @@
                         <!-- 자주 사용한 스티커들이 여기에 표시됨 -->
                     </div>
                 </div>
+                
+                <!-- 분석 보고서 다운로드 버튼 -->
+                <div class="flex justify-center mt-6 no-print">
+                    <button onclick="downloadAnalysisReport()" class="px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition">
+                        📄 분석 보고서 PDF로 저장
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -544,6 +576,19 @@
             updateStats();
             loadDiaryList();
             setupCharts();
+            
+            // 학생 정보 섹션 자동 추가
+            if (typeof portfolioManager !== 'undefined') {
+                const infoSection = document.getElementById('studentInfoSection');
+                if (infoSection) {
+                    infoSection.innerHTML = portfolioManager.createStudentInfoHTML();
+                }
+                
+                const downloadSection = document.getElementById('downloadSection');
+                if (downloadSection) {
+                    downloadSection.innerHTML = portfolioManager.createDownloadButtonsHTML();
+                }
+            }
         });
 
         // 오늘 날짜 설정
@@ -655,6 +700,16 @@
             
             // 저장
             localStorage.setItem('emotionDiaryEntries', JSON.stringify(diaryEntries));
+            
+            // 포트폴리오에 활동 추가
+            if (typeof portfolioManager !== 'undefined') {
+                portfolioManager.addActivity({
+                    toolName: '감정 날씨 일기',
+                    type: 'emotion-diary',
+                    description: `${title} - 감정온도: ${mood}°`,
+                    data: entry
+                });
+            }
             
             // 폼 초기화
             resetForm();
@@ -1052,6 +1107,19 @@
                     document.body.appendChild(confetti);
                     setTimeout(() => confetti.remove(), 3000);
                 }, i * 50);
+            }
+        }
+
+        // 다운로드 기능들
+        function downloadTimeline() {
+            if (typeof portfolioManager !== 'undefined') {
+                portfolioManager.downloadAsImage('timelineMainContent', `감정타임라인_${document.getElementById('timelineDate').value}.png`);
+            }
+        }
+
+        function downloadAnalysisReport() {
+            if (typeof portfolioManager !== 'undefined') {
+                portfolioManager.downloadAsPDF('analysisMainContent', `감정분석보고서_${new Date().toISOString().split('T')[0]}.pdf`);
             }
         }
     </script>
