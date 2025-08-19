@@ -21,31 +21,28 @@
 - **[감정 날씨 일기](https://plusiam.github.io/emotion-weather-diary/)** ✅ - 하루의 감정 변화 기록하기
 - **[감정 예보](./tools/emotion-forecast)** - 내일의 감정 날씨 예측하기
 
-#### 🎴 감정 카드 도구
-- **[디지털 감정 카드](./tools/emotion-cards)** - 다양한 감정 이름 알아보기
+#### 🎴 감정 탐구 도구
 - **[감정 4분면 탐험가 Plus](https://plusiam.github.io/emotion-explorer/)** ✅ - Russell 모델 기반 체계적 감정 탐구
-- **[나만의 감정 사전](./tools/my-emotion-dictionary)** - 특별한 감정 이름 만들기
+- **[감정카드 메이커](https://plusiam.github.io/emotion-card-maker/)** ✅ - 나만의 감정카드 제작
 
-#### 🎯 추가 성찰 도구
+#### 🎯 개인 성찰 도구
 - **[나의 버킷리스트](https://plusiam.github.io/bucket-dreams/)** ✅ - 목표 설정과 달성을 통한 자기 성찰
 - **[내 마음을 알리는 문패](https://plusiam.github.io/munpae-maker/)** ✅ - 감정 상태를 창의적으로 표현
 
 ### 2단계: 가족 - 우리 가족의 행복 만들기 (5-8차시)
 
 #### 👨‍👩‍👧‍👦 가족 활동 도구
-- **[가족 감정 날씨판](./tools/family-weather-board)** - 우리 집 감정 날씨 공유하기
 - **[가족 행복 순간 그리기](https://plusiam.github.io/family-happy-moments-v2)** ✅
-- **[효도 쿠폰 만들기](https://plusiam.github.io/family-love-coupon)** ✅
+- **[효도 쿠폰 만들기](https://plusiam.github.io/family-love-coupon-app/)** ✅
 - **[가족 사랑 엽서](https://plusiam.github.io/my-family-postcard)** ✅
+- **[계절 테마 마음편지](https://plusiam.github.io/seasonal-heart-letter/)** ✅ - 가족에게 전하는 계절 메시지
 
 ### 3단계: 공감 - 마음으로 소통하기 (9-12차시)
 
 #### 🔤 ABC 모델 도구
-- **[ABC 감정 분석기](./tools/abc-analyzer)** - 상황-생각-감정 연결 이해하기
+- **[ABC 친구 상담사](https://plusiam.github.io/abc-friend-consultant)** ✅ - ABC 모델로 친구 도와주기
+- **[ABC 상담 마음이](https://plusiam.github.io/abc-counselor-ai/)** ✅ - AI 기반 정서 상담 도우미
 - **[가족 ABC 인터뷰](./tools/family-abc-interview)** - 가족의 ABC 알아보기
-- **[관점 바꾸기 게임](./tools/perspective-game)** - 다른 생각으로 감정 바꾸기
-- **[ABC 생각 바꾸기](https://plusiam.github.io/maum-hub/)** ✅ - 인지 전환 연습 (maum-hub 참조)
-- **[역지사지 ABC 상담 브릿지](https://plusiam.github.io/maum-hub/)** ✅ - 공감 상담 (maum-hub 참조)
 
 ### 프로젝트 마무리 도구 (13-15차시)
 
@@ -87,16 +84,16 @@
 
 | 차시 | 주제 | 추천 도구 | 활동 시간 |
 |------|------|-----------|-----------|
-| 1 | 가족 속에서 나는 누구일까? | See-Think-Wonder | 20분 |
+| 1 | 가족 속에서 나는 누구일까? | 내 마음을 알리는 문패 | 20분 |
 | 2 | 오늘 나의 감정 날씨는? | 감정 날씨 체크인 | 15분 |
-| 3 | 감정카드로 마음 찾기 | 디지털 감정 카드, 감정 4분면 탐험가 Plus | 25분 |
-| 4 | 감정 성장 포트폴리오 시작 | 감정 일기 | 20분 |
-| 5 | 나의 감정이 가족에게 미치는 영향 | 가족 감정 그래프 | 20분 |
+| 3 | 감정카드로 마음 찾기 | 감정 4분면 탐험가 Plus | 25분 |
+| 4 | 감정 성장 포트폴리오 시작 | 감정 날씨 일기 | 20분 |
+| 5 | 나의 감정이 가족에게 미치는 영향 | 감정 성장 그래프 | 20분 |
 | 6 | 효와 우애의 진짜 의미 | 효도 쿠폰 만들기 | 25분 |
-| 7 | 가족 감정 날씨 프로젝트 | 가족 감정 날씨판 | 30분 |
-| 8 | 경험 나누기 | Headlines 만들기 | 20분 |
-| 9 | ABC로 마음 이해하기 | ABC 감정 분석기 | 25분 |
-| 10 | 가족의 ABC 이해하기 | Step Inside 활동 | 25분 |
+| 7 | 가족 감정 날씨 프로젝트 | 계절 테마 마음편지 | 30분 |
+| 8 | 경험 나누기 | 가족 사랑 엽서 | 20분 |
+| 9 | ABC로 마음 이해하기 | ABC 상담 마음이 | 25분 |
+| 10 | 가족의 ABC 이해하기 | ABC 친구 상담사 | 25분 |
 | 11 | ABC 소통 가이드북 만들기 | 가족 ABC 인터뷰 | 30분 |
 | 12 | 마음 브릿지 완성 | 감정 성장 그래프 | 25분 |
 | 13-15 | 프로젝트 발표회 | 포트폴리오 정리 | 120분 |
@@ -115,12 +112,25 @@
 - 기기 조작이 어려운 학생 → 짝 활동으로 진행
 - 시간이 부족한 경우 → 핵심 활동만 선택하여 진행
 
-## 🔗 관련 자료
+## 🔧 개발 현황 및 정리 사항
 
-### 교사용 자료
-- [수업 지도안](./resources/lesson-plans)
-- [평가 루브릭](./resources/rubrics)
-- [학부모 안내문](./resources/parent-guide)
+### ✅ 통합 완료 (maum-hub에서 가져온 도구)
+1. **감정 4분면 탐험가 Plus** - 기존 감정 4분면 도구 업그레이드
+2. **나의 버킷리스트** - 목표 설정과 자기 성찰
+3. **내 마음을 알리는 문패** - 감정 표현 도구
+4. **계절 테마 마음편지** - 가족 메시지 전달
+5. **ABC 상담 마음이** - AI 기반 상담 도우미
+
+### 🗑 삭제/대체 예정 도구
+다음 도구들은 더 나은 버전으로 대체되었거나 중복되어 정리가 필요합니다:
+- `./tools/emotion-cards` → **감정 4분면 탐험가 Plus**로 대체
+- `./tools/emotion-quadrant` → **감정 4분면 탐험가 Plus**로 대체
+- `./tools/abc-analyzer` → **ABC 상담 마음이**로 대체
+- `./tools/my-emotion-dictionary` → **감정카드 메이커**로 대체
+- `./tools/family-weather-board` → **계절 테마 마음편지**로 대체
+- `./tools/perspective-game` → **ABC 상담 마음이**에 통합
+
+## 🔗 관련 자료
 
 ### 관련 프로젝트
 - **[마음 허브(maum-hub)](https://plusiam.github.io/maum-hub/)** - 정서조절 웹학습지 모음
