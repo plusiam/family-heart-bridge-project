@@ -328,6 +328,9 @@
                             🏆 <span id="totalPoints">0</span>점
                         </span>
                     </div>
+                    <button onclick="refreshData()" class="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">
+                        🔄 새로고침
+                    </button>
                     <button onclick="showDataMenu()" class="px-4 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition">
                         💾 데이터
                     </button>
@@ -637,6 +640,9 @@
                     📤 학습 기록 불러오기
                 </button>
                 <input type="file" id="importFileModal" hidden accept=".json" onchange="importLearningData(this.files[0])">
+                <button onclick="refreshData(); closeDataMenu();" class="w-full px-4 py-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition">
+                    🔄 데이터 새로 고침
+                </button>
                 <button onclick="changeProfile(); closeDataMenu();" class="w-full px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition">
                     👤 프로필 변경
                 </button>
@@ -865,6 +871,33 @@
             
             todayTimeline.activities.push(activity);
             localStorage.setItem('emotionActivityTimeline', JSON.stringify(activityTimeline));
+        }
+
+        // 새로 고침 함수 구현
+        function refreshData() {
+            // 확인 메시지
+            if (confirm('저장된 데이터를 다시 불러옵니다. 계속하시겠습니까?')) {
+                // localStorage에서 데이터 다시 로드
+                collectedCards = JSON.parse(localStorage.getItem('collectedEmotionCards') || '[]');
+                customCards = JSON.parse(localStorage.getItem('customEmotionCards') || '[]');
+                totalPoints = parseInt(localStorage.getItem('emotionCardPoints') || '0');
+                activityTimeline = JSON.parse(localStorage.getItem('emotionActivityTimeline') || '[]');
+                
+                // 사용자 프로필 다시 로드
+                const savedProfile = localStorage.getItem('emotionCardUserProfile');
+                if (savedProfile) {
+                    userProfile = JSON.parse(savedProfile);
+                    displayUserProfile();
+                }
+                
+                // UI 업데이트
+                renderGallery();
+                updateStats();
+                updatePointsDisplay();
+                
+                // 성공 메시지
+                showModal('🔄', '새로 고침 완료!', '데이터를 최신 상태로 업데이트했습니다.');
+            }
         }
 
         // 학습 데이터 내보내기
